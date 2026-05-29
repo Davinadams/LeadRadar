@@ -1,0 +1,1082 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LeadRadar — Find businesses without websites</title>
+<style>
+  :root {
+    --bg: #0e0e10;
+    --bg2: #17171a;
+    --bg3: #1e1e22;
+    --border: rgba(255,255,255,0.08);
+    --border2: rgba(255,255,255,0.14);
+    --text: #f0f0f0;
+    --muted: #888;
+    --muted2: #555;
+    --accent: #00d97e;
+    --accent2: #00b368;
+    --warn: #f59e0b;
+    --danger: #ef4444;
+    --info: #3b82f6;
+    --purple: #a78bfa;
+    --radius: 10px;
+    --radius-sm: 6px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Inter', -apple-system, sans-serif; min-height: 100vh; }
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap');
+
+  /* Layout */
+  .sidebar { position: fixed; left: 0; top: 0; bottom: 0; width: 220px; background: var(--bg2); border-right: 1px solid var(--border); padding: 24px 16px; display: flex; flex-direction: column; gap: 4px; z-index: 10; }
+  .main { margin-left: 220px; min-height: 100vh; padding: 32px; }
+  .logo { font-family: 'Space Mono', monospace; font-size: 16px; font-weight: 700; color: var(--accent); letter-spacing: -0.5px; margin-bottom: 24px; display: flex; align-items: center; gap: 8px; }
+  .logo-dot { width: 8px; height: 8px; background: var(--accent); border-radius: 50%; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.3;} }
+  .nav-item { padding: 8px 12px; border-radius: var(--radius-sm); cursor: pointer; font-size: 13px; color: var(--muted); display: flex; align-items: center; gap: 8px; transition: all 0.15s; }
+  .nav-item:hover { color: var(--text); background: var(--bg3); }
+  .nav-item.active { color: var(--text); background: var(--bg3); }
+  .nav-item svg { width: 15px; height: 15px; flex-shrink: 0; }
+  .nav-section { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted2); padding: 12px 12px 4px; margin-top: 8px; }
+  .sidebar-bottom { margin-top: auto; padding-top: 16px; border-top: 1px solid var(--border); }
+  .key-status { font-size: 11px; padding: 6px 10px; border-radius: var(--radius-sm); }
+  .key-ok { background: rgba(0,217,126,0.1); color: var(--accent); }
+  .key-missing { background: rgba(239,68,68,0.1); color: var(--danger); }
+
+  /* Page headers */
+  .page-title { font-size: 24px; font-weight: 600; letter-spacing: -0.5px; margin-bottom: 4px; }
+  .page-sub { font-size: 14px; color: var(--muted); margin-bottom: 28px; }
+
+  /* Search panel */
+  .search-panel { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin-bottom: 24px; }
+  .search-row { display: flex; gap: 10px; flex-wrap: wrap; }
+  .field { display: flex; flex-direction: column; gap: 5px; flex: 1; min-width: 160px; }
+  .field label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.7px; color: var(--muted); }
+  .field input, .field select { height: 38px; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--bg3); color: var(--text); padding: 0 12px; font-size: 14px; outline: none; transition: border-color 0.15s; }
+  .field input:focus, .field select:focus { border-color: var(--border2); }
+  .field select option { background: var(--bg3); }
+  .btn { height: 38px; padding: 0 18px; border-radius: var(--radius-sm); border: 1px solid var(--border); background: transparent; color: var(--text); font-size: 13px; font-weight: 500; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.15s; white-space: nowrap; }
+  .btn:hover { border-color: var(--border2); background: var(--bg3); }
+  .btn:active { transform: scale(0.97); }
+  .btn-accent { background: var(--accent); color: #000; border-color: var(--accent); font-weight: 600; }
+  .btn-accent:hover { background: var(--accent2); border-color: var(--accent2); }
+  .btn-sm { height: 28px; padding: 0 10px; font-size: 12px; }
+  .btn-danger { border-color: rgba(239,68,68,0.3); color: var(--danger); }
+  .btn-danger:hover { background: rgba(239,68,68,0.08); }
+
+  /* Stats bar */
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 24px; }
+  .stat { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; }
+  .stat-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.7px; color: var(--muted); margin-bottom: 6px; }
+  .stat-val { font-size: 26px; font-weight: 600; font-family: 'Space Mono', monospace; }
+  .stat-val.green { color: var(--accent); }
+  .stat-val.amber { color: var(--warn); }
+  .stat-val.purple { color: var(--purple); }
+
+  /* Leads grid */
+  .leads-grid { display: flex; flex-direction: column; gap: 8px; }
+  .lead-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 18px; cursor: pointer; transition: border-color 0.15s; }
+  .lead-card:hover { border-color: var(--border2); }
+  .lead-card.active { border-color: var(--accent); }
+  .lead-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+  .lead-name { font-size: 15px; font-weight: 600; }
+  .lead-addr { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .lead-score { font-family: 'Space Mono', monospace; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 20px; flex-shrink: 0; }
+  .score-high { background: rgba(0,217,126,0.12); color: var(--accent); }
+  .score-mid { background: rgba(245,158,11,0.12); color: var(--warn); }
+  .score-low { background: var(--bg3); color: var(--muted); }
+  .badges { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
+  .badge { font-size: 11px; padding: 2px 8px; border-radius: 20px; display: inline-flex; align-items: center; gap: 4px; }
+  .b-noweb { background: rgba(239,68,68,0.1); color: #f87171; }
+  .b-gem { background: rgba(167,139,250,0.12); color: var(--purple); }
+  .b-rating { background: rgba(245,158,11,0.1); color: var(--warn); }
+  .b-type { background: var(--bg3); color: var(--muted); border: 1px solid var(--border); }
+  .b-saved { background: rgba(0,217,126,0.1); color: var(--accent); }
+  .b-open { background: rgba(0,217,126,0.08); color: var(--accent); }
+  .b-has-site { background: rgba(59,130,246,0.1); color: #60a5fa; }
+  .b-rank-top { background: rgba(0,217,126,0.12); color: var(--accent); }
+  .b-rank-mid { background: rgba(245,158,11,0.1); color: var(--warn); }
+  .b-rank-low { background: rgba(239,68,68,0.1); color: #f87171; }
+  .b-traffic-green { background: rgba(0,217,126,0.12); color: var(--accent); }
+  .b-traffic-yellow { background: rgba(245,158,11,0.1); color: var(--warn); }
+  .b-traffic-orange { background: rgba(249,115,22,0.12); color: #fb923c; }
+  .b-traffic-red { background: rgba(239,68,68,0.1); color: #f87171; }
+  .b-grade-a { background: rgba(0,217,126,0.12); color: var(--accent); }
+  .b-grade-b { background: rgba(59,130,246,0.12); color: #60a5fa; }
+  .b-grade-c { background: rgba(245,158,11,0.12); color: var(--warn); }
+  .b-grade-d { background: rgba(239,68,68,0.12); color: #f87171; }
+  .b-grade-f { background: rgba(239,68,68,0.2); color: #ef4444; }
+  .web-check-row { margin-top: 12px; padding: 12px; background: var(--bg3); border-radius: var(--radius-sm); font-size: 13px; }
+  .issue-tag { background: rgba(239,68,68,0.1); color: #f87171; padding: 2px 8px; border-radius: 20px; font-size: 11px; }
+  .lead-footer { display: flex; gap: 8px; margin-top: 12px; align-items: center; }
+  .lead-phone { font-size: 12px; color: var(--muted); margin-left: auto; }
+
+  /* Detail drawer */
+  .detail-drawer { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin-top: 12px; }
+  .detail-drawer h3 { font-size: 17px; font-weight: 600; margin-bottom: 4px; }
+  .detail-sub { font-size: 13px; color: var(--muted); margin-bottom: 16px; }
+  .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+  .detail-row { background: var(--bg3); border-radius: var(--radius-sm); padding: 10px 12px; }
+  .detail-key { font-size: 10px; text-transform: uppercase; letter-spacing: 0.7px; color: var(--muted2); margin-bottom: 3px; }
+  .detail-val { font-size: 13px; color: var(--text); word-break: break-all; }
+  .detail-val a { color: var(--info); text-decoration: none; }
+  .detail-val a:hover { text-decoration: underline; }
+  .opportunity { background: rgba(0,217,126,0.07); border: 1px solid rgba(0,217,126,0.15); border-radius: var(--radius-sm); padding: 10px 14px; font-size: 13px; color: var(--accent); margin-bottom: 16px; }
+  .score-bar-wrap { height: 4px; background: var(--bg3); border-radius: 2px; margin-top: 6px; }
+  .score-bar { height: 4px; border-radius: 2px; background: var(--accent); transition: width 0.5s; }
+
+  /* Pipeline */
+  .pipeline-table { width: 100%; border-collapse: collapse; }
+  .pipeline-table th { font-size: 11px; text-transform: uppercase; letter-spacing: 0.7px; color: var(--muted2); padding: 8px 12px; text-align: left; border-bottom: 1px solid var(--border); }
+  .pipeline-table td { padding: 12px; border-bottom: 1px solid var(--border); font-size: 13px; vertical-align: middle; }
+  .pipeline-table tr:last-child td { border-bottom: none; }
+  .pipeline-table tr:hover td { background: rgba(255,255,255,0.02); }
+  .status-sel { height: 28px; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--bg3); color: var(--text); padding: 0 8px; font-size: 12px; outline: none; cursor: pointer; }
+  .status-new { color: var(--info); }
+  .status-contacted { color: var(--warn); }
+  .status-demo { color: var(--purple); }
+  .status-closed { color: var(--accent); }
+  .status-lost { color: var(--danger); }
+  .notes-mini { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .table-wrap { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+
+  /* Outreach */
+  .outreach-layout { display: grid; grid-template-columns: 280px 1fr; gap: 16px; }
+  .outreach-left { display: flex; flex-direction: column; gap: 10px; }
+  .outreach-type-btn { padding: 10px 14px; border-radius: var(--radius-sm); border: 1px solid var(--border); background: transparent; color: var(--muted); font-size: 13px; cursor: pointer; text-align: left; transition: all 0.15s; display: flex; align-items: center; gap: 8px; }
+  .outreach-type-btn:hover { color: var(--text); border-color: var(--border2); }
+  .outreach-type-btn.active { color: var(--text); border-color: var(--accent); background: rgba(0,217,126,0.05); }
+  .script-box { background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; font-size: 14px; line-height: 1.75; color: var(--text); white-space: pre-wrap; min-height: 200px; }
+  .script-subject { font-size: 12px; color: var(--muted); border-bottom: 1px solid var(--border); padding-bottom: 10px; margin-bottom: 14px; }
+  .script-body { }
+
+  /* Empty + loading */
+  .empty { text-align: center; padding: 60px 20px; color: var(--muted); }
+  .empty svg { width: 40px; height: 40px; margin-bottom: 14px; opacity: 0.3; }
+  .empty p { font-size: 14px; }
+  .spinner { width: 18px; height: 18px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.65s linear infinite; display: inline-block; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading { display: flex; align-items: center; gap: 10px; font-size: 14px; color: var(--muted); padding: 40px 20px; justify-content: center; }
+
+  /* Alert banner */
+  .banner { padding: 10px 16px; border-radius: var(--radius-sm); font-size: 13px; margin-bottom: 16px; display: none; }
+  .banner-warn { background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.2); color: var(--warn); }
+  .banner-err { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.2); color: #f87171; }
+  .banner.show { display: block; }
+
+  /* Notes modal */
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 100; display: none; align-items: center; justify-content: center; }
+  .modal-overlay.show { display: flex; }
+  .modal { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; width: 460px; max-width: 95vw; }
+  .modal h3 { font-size: 16px; font-weight: 600; margin-bottom: 14px; }
+  .modal textarea { width: 100%; height: 100px; background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); font-size: 14px; padding: 10px 12px; resize: vertical; outline: none; font-family: inherit; }
+  .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 14px; }
+  .notes-list { margin-bottom: 12px; display: flex; flex-direction: column; gap: 8px; }
+  .note-item { background: var(--bg3); border-radius: var(--radius-sm); padding: 8px 12px; font-size: 13px; }
+  .note-ts { font-size: 11px; color: var(--muted); margin-top: 3px; }
+
+  /* Responsive */
+  @media (max-width: 900px) {
+    .sidebar { display: none; }
+    .main { margin-left: 0; padding: 20px 16px; }
+    .stats { grid-template-columns: repeat(2, 1fr); }
+    .outreach-layout { grid-template-columns: 1fr; }
+    .detail-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<nav class="sidebar">
+  <div class="logo">
+    <span class="logo-dot"></span>
+    LeadRadar
+  </div>
+  <div class="nav-section">Search</div>
+  <div class="nav-item active" onclick="showPage('leads', this)">
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35" stroke-linecap="round"/></svg>
+    Find Leads
+  </div>
+  <div class="nav-section">Manage</div>
+  <div class="nav-item" onclick="showPage('pipeline', this)">
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4" stroke-linecap="round" stroke-linejoin="round"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" stroke-linecap="round"/></svg>
+    Pipeline
+    <span id="pipeline-count" style="margin-left:auto; font-size:11px; background:var(--bg3); padding:1px 7px; border-radius:20px; color:var(--muted);"></span>
+  </div>
+  <div class="nav-item" onclick="showPage('outreach', this)">
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    Outreach
+  </div>
+  <div class="sidebar-bottom">
+    <div id="key-status" class="key-status">Checking API…</div>
+  </div>
+</nav>
+
+<!-- Notes modal -->
+<div class="modal-overlay" id="notes-modal">
+  <div class="modal">
+    <h3 id="notes-title">Notes</h3>
+    <div class="notes-list" id="notes-list"></div>
+    <textarea id="notes-input" placeholder="Add a note…"></textarea>
+    <div class="modal-actions">
+      <button class="btn btn-sm" onclick="closeNotes()">Cancel</button>
+      <button class="btn btn-sm btn-accent" onclick="saveNote()">Save note</button>
+    </div>
+  </div>
+</div>
+
+<main class="main">
+
+  <!-- ── LEADS PAGE ── -->
+  <div id="page-leads">
+    <div class="page-title">Find Leads</div>
+    <div class="page-sub">Discover local businesses that don't have a website yet</div>
+
+    <div id="no-key-banner" class="banner banner-warn">
+      ⚠ No Google Places API key detected. Add it to your <code>.env</code> file to search real businesses.
+      See <code>.env.example</code> for setup instructions.
+    </div>
+
+    <div class="search-panel">
+      <div class="search-row">
+        <div class="field" style="flex:2;">
+          <label>Industry</label>
+          <input type="text" id="q-industry" list="industry-list" placeholder="e.g. plumbers, nail salons, dentists" value="restaurants">
+        <datalist id="industry-list">
+          <!-- Food & Drink -->
+          <option value="Restaurants"><option value="Bakeries"><option value="Coffee Shops">
+          <option value="Food Trucks"><option value="Pizza Places"><option value="Sushi Restaurants">
+          <option value="Mexican Restaurants"><option value="BBQ Restaurants"><option value="Burger Joints">
+          <option value="Sandwich Shops"><option value="Ice Cream Shops"><option value="Juice Bars">
+          <option value="Catering Services"><option value="Meal Prep Services"><option value="Breweries">
+          <option value="Wine Bars"><option value="Bars and Nightclubs"><option value="Diners">
+          <option value="Buffets"><option value="Vegan Restaurants"><option value="Food Delivery">
+          <!-- Health & Beauty -->
+          <option value="Hair Salons"><option value="Nail Salons"><option value="Barbershops">
+          <option value="Spas"><option value="Massage Therapy"><option value="Tanning Salons">
+          <option value="Eyebrow Threading"><option value="Eyelash Extensions"><option value="Waxing Salons">
+          <option value="Tattoo Shops"><option value="Piercing Studios"><option value="Med Spas">
+          <option value="Skincare Clinics"><option value="Makeup Artists"><option value="Hair Extensions">
+          <!-- Medical & Wellness -->
+          <option value="Dentists"><option value="Orthodontists"><option value="Chiropractors">
+          <option value="Optometrists"><option value="Physical Therapy"><option value="Acupuncture">
+          <option value="Mental Health Counseling"><option value="Pediatricians"><option value="Urgent Care">
+          <option value="Dermatologists"><option value="Podiatrists"><option value="Audiologists">
+          <option value="Nutritionists"><option value="Personal Trainers"><option value="Yoga Studios">
+          <option value="Pilates Studios"><option value="Gyms"><option value="Crossfit Gyms">
+          <option value="Martial Arts"><option value="Dance Studios"><option value="Swim Schools">
+          <!-- Home Services -->
+          <option value="Plumbers"><option value="Electricians"><option value="HVAC">
+          <option value="Roofers"><option value="Painters"><option value="Landscapers">
+          <option value="Lawn Care"><option value="Tree Services"><option value="Pressure Washing">
+          <option value="Window Cleaning"><option value="Gutter Cleaning"><option value="Pool Services">
+          <option value="Pest Control"><option value="Cleaning Services"><option value="Maid Services">
+          <option value="Handyman Services"><option value="General Contractors"><option value="Flooring">
+          <option value="Tile Installation"><option value="Cabinet Makers"><option value="Fence Companies">
+          <option value="Concrete Contractors"><option value="Masonry"><option value="Insulation">
+          <option value="Solar Installation"><option value="Generator Services"><option value="Garage Door Repair">
+          <option value="Locksmith"><option value="Moving Companies"><option value="Junk Removal">
+          <option value="Interior Design"><option value="Home Staging"><option value="Architects">
+          <!-- Auto -->
+          <option value="Auto Repair"><option value="Auto Body Shops"><option value="Car Detailing">
+          <option value="Car Washes"><option value="Tire Shops"><option value="Oil Change">
+          <option value="Transmission Repair"><option value="Auto Glass"><option value="Towing">
+          <option value="Used Car Dealers"><option value="RV Repair"><option value="Motorcycle Repair">
+          <!-- Professional Services -->
+          <option value="Accountants"><option value="Lawyers"><option value="Real Estate Agents">
+          <option value="Insurance Agents"><option value="Financial Advisors"><option value="Mortgage Brokers">
+          <option value="Tax Preparation"><option value="Bookkeepers"><option value="HR Consultants">
+          <option value="Marketing Agencies"><option value="Graphic Designers"><option value="Photographers">
+          <option value="Videographers"><option value="Wedding Planners"><option value="Event Planners">
+          <option value="Translators"><option value="Notary Services"><option value="Private Investigators">
+          <!-- Pets -->
+          <option value="Veterinarians"><option value="Dog Groomers"><option value="Dog Trainers">
+          <option value="Pet Boarding"><option value="Dog Walkers"><option value="Pet Sitting">
+          <option value="Aquarium Services"><option value="Horse Stables">
+          <!-- Education & Childcare -->
+          <option value="Tutoring"><option value="Daycare Centers"><option value="Preschools">
+          <option value="Music Lessons"><option value="Art Classes"><option value="Driving Schools">
+          <option value="Language Schools"><option value="Test Prep"><option value="Coding Bootcamps">
+          <!-- Retail & Other -->
+          <option value="Florists"><option value="Gift Shops"><option value="Clothing Boutiques">
+          <option value="Jewelry Stores"><option value="Furniture Stores"><option value="Antique Shops">
+          <option value="Sporting Goods"><option value="Bike Shops"><option value="Music Stores">
+          <option value="Bookstores"><option value="Toy Stores"><option value="Thrift Stores">
+          <option value="Print Shops"><option value="Dry Cleaners"><option value="Alterations">
+          <option value="Shoe Repair"><option value="Watch Repair"><option value="Electronics Repair">
+          <option value="Computer Repair"><option value="Phone Repair"><option value="Appliance Repair">
+        </datalist>
+        </div>
+        <div class="field" style="flex:1.5;">
+          <label>Location</label>
+          <input type="text" id="q-location" list="location-list" placeholder="City, state or ZIP" value="Austin, TX">
+        <datalist id="location-list">
+          <!-- Utah -->
+          <option value="Salt Lake City, UT"><option value="West Valley City, UT"><option value="Provo, UT">
+          <option value="West Jordan, UT"><option value="Orem, UT"><option value="Sandy, UT">
+          <option value="Ogden, UT"><option value="St. George, UT"><option value="Layton, UT">
+          <option value="South Jordan, UT"><option value="Taylorsville, UT"><option value="Logan, UT">
+          <option value="Lehi, UT"><option value="Murray, UT"><option value="Millcreek, UT">
+          <option value="Draper, UT"><option value="Bountiful, UT"><option value="Riverton, UT">
+          <option value="Roy, UT"><option value="Spanish Fork, UT"><option value="Pleasant Grove, UT">
+          <option value="Cottonwood Heights, UT"><option value="Springville, UT"><option value="American Fork, UT">
+          <option value="Herriman, UT"><option value="Kaysville, UT"><option value="Cedar City, UT">
+          <option value="Midvale, UT"><option value="Syracuse, UT"><option value="Clearfield, UT">
+          <option value="Tooele, UT"><option value="South Salt Lake, UT"><option value="Holladay, UT">
+          <option value="Eagle Mountain, UT"><option value="Saratoga Springs, UT"><option value="Payson, UT">
+          <option value="North Ogden, UT"><option value="Washington, UT"><option value="Brigham City, UT">
+          <option value="Magna, UT"><option value="Santaquin, UT"><option value="Clinton, UT">
+          <option value="North Salt Lake, UT"><option value="Highland, UT"><option value="Bluffdale, UT">
+          <option value="Price, UT"><option value="Vernal, UT"><option value="Moab, UT">
+          <option value="Heber City, UT"><option value="Park City, UT"><option value="Nephi, UT">
+          <option value="Richfield, UT"><option value="Ephraim, UT"><option value="Manti, UT">
+          <option value="Roosevelt, UT"><option value="Duchesne, UT"><option value="Kanab, UT">
+          <!-- Arizona -->
+          <option value="Phoenix, AZ"><option value="Tucson, AZ"><option value="Mesa, AZ">
+          <option value="Chandler, AZ"><option value="Scottsdale, AZ"><option value="Gilbert, AZ">
+          <option value="Glendale, AZ"><option value="Tempe, AZ"><option value="Peoria, AZ">
+          <option value="Surprise, AZ"><option value="Goodyear, AZ"><option value="Buckeye, AZ">
+          <option value="Yuma, AZ"><option value="Avondale, AZ"><option value="Flagstaff, AZ">
+          <option value="Maricopa, AZ"><option value="Casa Grande, AZ"><option value="Lake Havasu City, AZ">
+          <option value="Sierra Vista, AZ"><option value="Prescott, AZ"><option value="Prescott Valley, AZ">
+          <option value="Apache Junction, AZ"><option value="El Mirage, AZ"><option value="Queen Creek, AZ">
+          <option value="Bullhead City, AZ"><option value="San Tan Valley, AZ"><option value="Kingman, AZ">
+          <option value="Fountain Hills, AZ"><option value="Sahuarita, AZ"><option value="Oro Valley, AZ">
+          <option value="Marana, AZ"><option value="Florence, AZ"><option value="Coolidge, AZ">
+          <option value="Douglas, AZ"><option value="Nogales, AZ"><option value="Sedona, AZ">
+          <option value="Show Low, AZ"><option value="Payson, AZ"><option value="Cottonwood, AZ">
+          <option value="Camp Verde, AZ"><option value="Globe, AZ"><option value="Safford, AZ">
+          <option value="Winslow, AZ"><option value="Holbrook, AZ"><option value="Williams, AZ">
+          <option value="Page, AZ"><option value="Wickenburg, AZ"><option value="Anthem, AZ">
+          <option value="Sun City, AZ"><option value="Sun City West, AZ"><option value="Litchfield Park, AZ">
+          <option value="Tolleson, AZ"><option value="Youngtown, AZ"><option value="Guadalupe, AZ">
+          <!-- Colorado -->
+          <option value="Denver, CO"><option value="Colorado Springs, CO"><option value="Aurora, CO">
+          <option value="Fort Collins, CO"><option value="Lakewood, CO"><option value="Thornton, CO">
+          <option value="Arvada, CO"><option value="Westminster, CO"><option value="Pueblo, CO">
+          <option value="Centennial, CO"><option value="Boulder, CO"><option value="Highlands Ranch, CO">
+          <option value="Greeley, CO"><option value="Longmont, CO"><option value="Loveland, CO">
+          <option value="Broomfield, CO"><option value="Castle Rock, CO"><option value="Commerce City, CO">
+          <option value="Parker, CO"><option value="Northglenn, CO"><option value="Brighton, CO">
+          <option value="Littleton, CO"><option value="Englewood, CO"><option value="Wheat Ridge, CO">
+          <option value="Fountain, CO"><option value="Windsor, CO"><option value="Evans, CO">
+          <option value="Erie, CO"><option value="Lafayette, CO"><option value="Louisville, CO">
+          <option value="Durango, CO"><option value="Steamboat Springs, CO"><option value="Aspen, CO">
+          <option value="Vail, CO"><option value="Telluride, CO"><option value="Breckenridge, CO">
+          <option value="Montrose, CO"><option value="Grand Junction, CO"><option value="Glenwood Springs, CO">
+          <option value="Alamosa, CO"><option value="La Junta, CO"><option value="Trinidad, CO">
+          <option value="Walsenburg, CO"><option value="Canon City, CO"><option value="Florence, CO">
+          <option value="Pueblo West, CO"><option value="Security-Widefield, CO"><option value="Falcon, CO">
+          <option value="Woodland Park, CO"><option value="Salida, CO"><option value="Buena Vista, CO">
+          <option value="Leadville, CO"><option value="Silverthorne, CO"><option value="Frisco, CO">
+          <option value="Dillon, CO"><option value="Avon, CO"><option value="Edwards, CO">
+          <option value="Basalt, CO"><option value="Carbondale, CO"><option value="Rifle, CO">
+          <option value="Fruita, CO"><option value="Delta, CO"><option value="Gunnison, CO">
+          <option value="Crested Butte, CO"><option value="Pagosa Springs, CO"><option value="Cortez, CO">
+          <option value="Fort Morgan, CO"><option value="Sterling, CO"><option value="Yuma, CO">
+          <option value="Akron, CO"><option value="Wray, CO"><option value="Burlington, CO">
+        </datalist>
+        </div>
+        <div class="field" style="flex:1; min-width:130px;">
+          <label>Website</label>
+          <select id="f-website" onchange="applyFilters()">
+            <option value="all">All businesses</option>
+            <option value="no_website">No website</option>
+            <option value="has_website">Has website (any)</option>
+            <optgroup label="── Template builders ──">
+              <option value="wix">Wix site</option>
+              <option value="squarespace">Squarespace site</option>
+              <option value="weebly">Weebly site</option>
+              <option value="godaddy">GoDaddy site</option>
+              <option value="jimdo">Jimdo site</option>
+              <option value="any_template">Any template builder</option>
+            </optgroup>
+            <option value="free_email">Has Gmail/free email</option>
+            <option value="no_ssl">No SSL (not secure)</option>
+          </select>
+        </div>
+        <div class="field" style="flex:1; min-width:130px;">
+          <label>Reviews</label>
+          <select id="f-reviews" onchange="applyFilters()">
+            <option value="all">Any reviews</option>
+            <option value="lt20">Under 20</option>
+            <option value="20to50">20 – 50</option>
+            <option value="50to100">50 – 100</option>
+            <option value="100to150">100 – 150</option>
+            <option value="150to200">150 – 200</option>
+            <option value="200to250">200 – 250</option>
+            <option value="250to300">250 – 300</option>
+            <option value="gt300">300+</option>
+          </select>
+        </div>
+        <div class="field" style="flex:1; min-width:130px;">
+          <label>Google rank</label>
+          <select id="f-rank" onchange="applyFilters()">
+            <option value="all">Any rank</option>
+            <option value="1to10">Rank #1 – 10</option>
+            <option value="11to20">Rank #11 – 20</option>
+            <option value="21to30">Rank #21 – 30</option>
+            <option value="31to40">Rank #31 – 40</option>
+            <option value="41to50">Rank #41 – 50</option>
+            <option value="51to60">Rank #51 – 60</option>
+          </select>
+        </div>
+        <div class="field" style="flex:0; justify-content:flex-end; padding-top:16px;">
+          <button class="btn btn-accent" onclick="searchLeads()">
+            <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35" stroke-linecap="round"/></svg>
+            Search
+          </button>
+        </div>
+      </div>
+      <div style="font-size:11px; color:var(--muted2); margin-top:8px;">
+        Filters apply instantly to loaded results — no need to re-search
+      </div>
+    </div>
+
+    <div class="stats">
+      <div class="stat"><div class="stat-label">Found</div><div class="stat-val" id="s-found">—</div></div>
+      <div class="stat"><div class="stat-label">No website</div><div class="stat-val green" id="s-noweb">—</div></div>
+      <div class="stat"><div class="stat-label">Hidden gems</div><div class="stat-val amber" id="s-gems">—</div></div>
+      <div class="stat"><div class="stat-label">In pipeline</div><div class="stat-val purple" id="s-pipe">0</div></div>
+    </div>
+
+    <div id="leads-container">
+      <div class="empty">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" stroke-linecap="round" stroke-linejoin="round"/><polyline points="9 22 9 12 15 12 15 22" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <p>Enter an industry and location above to find your next clients</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── PIPELINE PAGE ── -->
+  <div id="page-pipeline" style="display:none;">
+    <div class="page-title">Pipeline</div>
+    <div class="page-sub">Track your saved leads from first contact to closed deal</div>
+    <div id="pipeline-container">
+      <div class="empty">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4" stroke-linecap="round" stroke-linejoin="round"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+        <p>No leads saved yet. Find leads and click "Save to pipeline"</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── OUTREACH PAGE ── -->
+  <div id="page-outreach" style="display:none;">
+    <div class="page-title">Outreach Generator</div>
+    <div class="page-sub">AI-written scripts personalized to each business</div>
+    <div class="outreach-layout">
+      <div class="outreach-left">
+        <div style="font-size:11px; text-transform:uppercase; letter-spacing:0.7px; color:var(--muted2); margin-bottom:4px;">Lead</div>
+        <select id="outreach-lead-sel" style="height:38px; border-radius:var(--radius-sm); border:1px solid var(--border); background:var(--bg3); color:var(--text); padding:0 12px; font-size:14px; outline:none; width:100%;">
+          <option value="">— Select a lead —</option>
+        </select>
+        <div style="font-size:11px; text-transform:uppercase; letter-spacing:0.7px; color:var(--muted2); margin-top:12px; margin-bottom:4px;">Format</div>
+        <button class="outreach-type-btn active" data-type="email" onclick="setOutreachType(this)">
+          <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+          Cold email
+        </button>
+        <button class="outreach-type-btn" data-type="sms" onclick="setOutreachType(this)">
+          <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+          SMS
+        </button>
+        <button class="outreach-type-btn" data-type="call" onclick="setOutreachType(this)">
+          <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.8a19.79 19.79 0 01-3.07-8.64A2 2 0 012 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14.92z"/></svg>
+          Call script
+        </button>
+        <button class="outreach-type-btn" data-type="dm" onclick="setOutreachType(this)">
+          <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+          Social DM
+        </button>
+        <button class="btn btn-accent" style="margin-top:8px;" onclick="generateOutreach()">
+          ✦ Generate script
+        </button>
+      </div>
+      <div>
+        <div id="outreach-result">
+          <div class="empty" style="padding:40px 0;">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+            <p>Select a lead and click Generate</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+const API = '';  // same origin
+
+let leads = [];
+let pipeline = [];
+let currentLead = null;
+let outreachType = 'email';
+let notesLead = null;
+
+// ─── Init ──────────────────────────────────────────────────────────────────
+async function init() {
+  await checkHealth();
+  await loadPipeline();
+}
+
+async function checkHealth() {
+  try {
+    const r = await fetch(API + '/api/health');
+    const d = await r.json();
+    const el = document.getElementById('key-status');
+    const banner = document.getElementById('no-key-banner');
+    if (d.hasKey) {
+      el.className = 'key-status key-ok';
+      el.textContent = '✓ API connected';
+    } else {
+      el.className = 'key-status key-missing';
+      el.textContent = '✗ No API key';
+      banner.classList.add('show');
+    }
+  } catch {
+    document.getElementById('key-status').textContent = 'Server offline';
+  }
+}
+
+// ─── Navigation ────────────────────────────────────────────────────────────
+function showPage(name, el) {
+  ['leads','pipeline','outreach'].forEach(p => {
+    document.getElementById('page-' + p).style.display = p === name ? 'block' : 'none';
+  });
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  el.classList.add('active');
+  if (name === 'pipeline') renderPipeline();
+  if (name === 'outreach') populateOutreachSelect();
+}
+
+// ─── Lead search ───────────────────────────────────────────────────────────
+async function searchLeads() {
+  const industry = document.getElementById('q-industry').value.trim();
+  const location = document.getElementById('q-location').value.trim();
+  if (!industry || !location) return;
+
+  const container = document.getElementById('leads-container');
+  container.innerHTML = `<div class="loading"><span class="spinner"></span> Scanning ${location} for ${industry}…</div>`;
+
+  try {
+    const params = new URLSearchParams({ industry, location });
+    const r = await fetch(API + '/api/leads?' + params);
+    const d = await r.json();
+
+    if (d.error) {
+      container.innerHTML = `<div class="empty"><p style="color:var(--danger)">Error: ${d.message}</p></div>`;
+      return;
+    }
+
+    leads = d.leads || [];
+    allLeads = [...leads]; // keep full unfiltered set
+    document.getElementById('s-found').textContent = d.rawTotal ?? leads.length;
+    document.getElementById('s-noweb').textContent = leads.filter(l => l.no_website).length;
+    document.getElementById('s-gems').textContent = leads.filter(l => l.is_hidden_gem).length;
+
+    applyFilters();
+    // Run AI digital presence scoring in background
+    runAIScoring(industry, location);
+
+  } catch(e) {
+    container.innerHTML = `<div class="empty"><p style="color:var(--danger)">Could not reach server. Is it running?</p></div>`;
+  }
+}
+
+function renderLeads(container) {
+  if (!leads.length) {
+    container.innerHTML = `<div class="empty"><p>No businesses found matching your filters. Try a broader search.</p></div>`;
+    return;
+  }
+  // Remember which cards are open before re-render
+  const openCards = new Set();
+  leads.forEach((l, i) => {
+    const el = document.getElementById('detail-' + i);
+    if (el && el.style.display !== 'none') openCards.add(i);
+  });
+  container.innerHTML = leads.map((l, i) => `
+    <div class="lead-card" id="lc-${i}" onclick="toggleDetail(${i})">
+      <div class="lead-top">
+        <div>
+          <div class="lead-name">${esc(l.name)}</div>
+          <div class="lead-addr">${esc(l.address || '')}</div>
+        </div>
+        <div style="display:flex; align-items:center; gap:8px; flex-shrink:0;">
+          ${l.score != null ? `<span class="lead-score ${l.score >= 70 ? 'score-high' : l.score >= 40 ? 'score-mid' : 'score-low'}" title="Opportunity score — higher means weaker digital presence">${l.score}/100</span>` : ''}
+        </div>
+      </div>
+      <div class="badges">
+        ${l.no_website ? `<span class="badge b-noweb">No website</span>` : `<span class="badge b-has-site">Has website</span>`}
+        ${l.site_platform && l.site_platform !== 'unknown' ? `<span class="badge b-rank-low" style="text-transform:capitalize;">${l.site_platform} site</span>` : ''}
+        ${l.has_free_email ? `<span class="badge b-rank-low">Gmail contact</span>` : ''}
+
+        ${l.is_hidden_gem ? `<span class="badge b-gem">◈ Hidden gem — ${l.rating}★ (${l.review_count} reviews)</span>` : ''}
+        ${l.rating ? `<span class="badge b-rating">★ ${l.rating} (${l.review_count})</span>` : ''}
+        ${l.is_open === true ? `<span class="badge b-open">Open now</span>` : ''}
+        ${l.search_rank ? `<span class="badge ${l.in_3pack ? 'b-rank-top' : l.search_rank <= 10 ? 'b-rank-mid' : 'b-rank-low'}">${l.in_3pack ? '★ ' : ''}#${l.search_rank} on Google Maps</span>` : ''}
+
+        ${pipeline.find(p => p.place_id === l.place_id) ? `<span class="badge b-saved">✓ Saved</span>` : ''}
+      </div>
+      <div class="lead-footer">
+        <button class="btn btn-sm" onclick="event.stopPropagation(); saveLead(${i})">+ Pipeline</button>
+        <button class="btn btn-sm" onclick="event.stopPropagation(); openOutreach(${i})">Write outreach</button>
+
+        ${l.phone ? `<span class="lead-phone">${esc(l.phone)}</span>` : ''}
+      </div>
+      <div id="detail-${i}" style="display:none;"></div>
+    </div>`).join('');
+  // Restore open cards
+  openCards.forEach(i => {
+    const el = document.getElementById('detail-' + i);
+    const card = document.getElementById('lc-' + i);
+    if (el) { el.style.display = 'block'; el.innerHTML = buildDetail(leads[i]); }
+    if (card) card.classList.add('active');
+  });
+}
+
+
+
+// ─── Client-side combinable filters ──────────────────────────────────────────
+let allLeads = [];
+
+function applyFilters() {
+  const website = document.getElementById('f-website')?.value || 'all';
+  const reviews = document.getElementById('f-reviews')?.value || 'all';
+  const rank    = document.getElementById('f-rank')?.value    || 'all';
+  const container = document.getElementById('leads-container');
+
+  leads = allLeads.filter(l => {
+    // Website filter
+    if (website === 'no_website'    && l.website)                         return false;
+    if (website === 'has_website'   && !l.website)                        return false;
+    if (website === 'wix'           && l.site_platform !== 'wix')         return false;
+    if (website === 'squarespace'   && l.site_platform !== 'squarespace') return false;
+    if (website === 'weebly'        && l.site_platform !== 'weebly')      return false;
+    if (website === 'godaddy'       && l.site_platform !== 'godaddy')     return false;
+    if (website === 'jimdo'         && l.site_platform !== 'jimdo')       return false;
+    if (website === 'any_template'  && !['wix','squarespace','weebly','godaddy','jimdo'].includes(l.site_platform)) return false;
+    if (website === 'free_email'    && !l.has_free_email)                 return false;
+    if (website === 'no_ssl'        && l.ssl !== false)                   return false;
+
+    // Reviews filter
+    const r = l.review_count || 0;
+    if (reviews === 'lt20'    && !(r < 20))         return false;
+    if (reviews === '20to50'  && !(r >= 20 && r < 50))   return false;
+    if (reviews === '50to100' && !(r >= 50 && r < 100))  return false;
+    if (reviews === '100to150'&& !(r >= 100 && r < 150)) return false;
+    if (reviews === '150to200'&& !(r >= 150 && r < 200)) return false;
+    if (reviews === '200to250'&& !(r >= 200 && r < 250)) return false;
+    if (reviews === '250to300'&& !(r >= 250 && r < 300)) return false;
+    if (reviews === 'gt300'   && !(r >= 300))        return false;
+
+    // Rank filter
+    const rk = l.search_rank || 999;
+    if (rank === '1to10'  && !(rk >= 1  && rk <= 10))  return false;
+    if (rank === '11to20' && !(rk >= 11 && rk <= 20))  return false;
+    if (rank === '21to30' && !(rk >= 21 && rk <= 30))  return false;
+    if (rank === '31to40' && !(rk >= 31 && rk <= 40))  return false;
+    if (rank === '41to50' && !(rk >= 41 && rk <= 50))  return false;
+    if (rank === '51to60' && !(rk >= 51 && rk <= 60))  return false;
+
+    return true;
+  });
+
+  renderLeads(container);
+  // Update stats to reflect filtered results
+  document.getElementById('s-noweb').textContent = leads.filter(l => l.no_website).length;
+  document.getElementById('s-gems').textContent  = leads.filter(l => l.is_hidden_gem).length;
+}
+
+// ─── Step 1: Get AI pitch reasons (fast) ─────────────────────────────────────
+async function runAIScoring(industry, location) {
+  try {
+    const r = await fetch('/api/score-leads', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ leads, industry, location })
+    });
+    const d = await r.json();
+    if (!d.scores) return;
+    d.scores.forEach(s => {
+      if (leads[s.i]) leads[s.i].pitch_reason = s.pitch_reason;
+    });
+    renderLeads(document.getElementById('leads-container'));
+  } catch(e) { console.log('Pitch reason fetch failed:', e.message); }
+
+  // Step 2: Run site audits in background, update scores as each one finishes
+  runSiteAudits();
+}
+
+// ─── Step 2: Background site audits — updates scores live as each finishes ───
+async function runSiteAudits() {
+  const sitesWithUrl = leads.filter(l => l.website);
+  if (!sitesWithUrl.length) return;
+
+  // Run 3 at a time
+  const BATCH = 3;
+  for (let i = 0; i < sitesWithUrl.length; i += BATCH) {
+    const batch = sitesWithUrl.slice(i, i + BATCH);
+    await Promise.allSettled(batch.map(async (lead) => {
+      try {
+        const r = await fetch('/api/site-audit?url=' + encodeURIComponent(lead.website) + '&place_id=' + encodeURIComponent(lead.place_id));
+        const d = await r.json();
+        const idx = leads.findIndex(l => l.place_id === lead.place_id);
+        if (idx === -1) return;
+        leads[idx].psi = d.psi;
+        leads[idx].ssl = d.ssl;
+        leads[idx].site_platform = d.site_platform;
+        leads[idx].has_free_email = d.has_free_email;
+        leads[idx].site_audited = true;
+        // Mirror server scoring logic exactly
+        let score = 0;
+        // Website quality (0-50)
+        const platforms = {wix:38, squarespace:35, weebly:38, godaddy:36, jimdo:37};
+        let webScore = platforms[d.site_platform] || 18;
+        if (d.psi) {
+          if (!d.psi.mobile_friendly)                   webScore += 7;
+          if (d.psi.performance < 40)                   webScore += 7;
+          else if (d.psi.performance < 65)              webScore += 3;
+          if (d.psi.seo < 50)                           webScore += 7;
+          else if (d.psi.seo < 75)                      webScore += 3;
+          if (d.psi.best_practices < 50)                webScore += 4;
+          if (d.psi.performance >= 80 && d.psi.seo >= 80 && d.psi.mobile_friendly) {
+            webScore = Math.max(webScore - 12, 2);
+          }
+        }
+        if (d.ssl === false)         webScore += 6;
+        if (d.has_free_email)        webScore += 5;
+        score += Math.min(webScore, 50);
+        // Rank tiebreaker (0-35)
+        const rank = Math.min(Math.max(leads[idx].search_rank || 60, 1), 60);
+        score += Math.round(((rank - 1) / 59) * 33) + 2;
+        // Social (0-15)
+        const reviews = leads[idx].review_count || 0;
+        if (reviews < 5)        score += 15;
+        else if (reviews < 15)  score += 10;
+        else if (reviews < 30)  score += 6;
+        else if (reviews < 75)  score += 3;
+        else if (reviews < 150) score += 1;
+        leads[idx].score = Math.min(Math.max(Math.round(score), 0), 100);
+        leads[idx].base_score = Math.round(((rank-1)/59)*33)+2;
+        // Re-sort and re-render after each update
+        leads.sort((a, b) => (b.score || 0) - (a.score || 0));
+        renderLeads(document.getElementById('leads-container'));
+      } catch(e) { console.log('Site audit failed for', lead.name, e.message); }
+    }));
+  }
+}
+
+function toggleDetail(i) {
+  const el = document.getElementById('detail-' + i);
+  const card = document.getElementById('lc-' + i);
+  if (el.style.display === 'none') {
+    el.style.display = 'block';
+    el.innerHTML = buildDetail(leads[i]);
+    card.classList.add('active');
+
+  } else {
+    el.style.display = 'none';
+    card.classList.remove('active');
+  }
+}
+
+
+
+function buildDetail(l) {
+  const types = (l.types || []).filter(t => !['establishment','point_of_interest'].includes(t)).join(', ');
+  return `<div class="detail-drawer">
+    <h3>${esc(l.name)}</h3>
+    <div class="detail-sub">${esc(l.address || '')}</div>
+
+    ${l.pitch_reason ? `<div class="opportunity">${esc(l.pitch_reason)}</div>` : l.no_website ? `<div class="opportunity">No website — direct opportunity to pitch your services.</div>` : ''}
+    ${l.is_hidden_gem ? `<div class="opportunity" style="border-color:rgba(167,139,250,0.3); color:var(--purple);">◈ Hidden gem — ${l.rating} stars with only ${l.review_count} reviews. Well-loved locally but customers can't find them online. Easy close.</div>` : ''}
+    ${l.score_breakdown ? `<div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px;">
+      ${Object.entries(l.score_breakdown).map(([k,v]) => `<span style="font-size:11px; background:var(--bg3); padding:3px 8px; border-radius:20px; color:${v<=30?'#f87171':v<=60?'var(--warn)':'var(--accent)'};">${k.replace(/_/g,' ')}: ${v}</span>`).join('')}
+    </div>` : ''}
+    <div class="detail-grid">
+      <div class="detail-row"><div class="detail-key">Phone</div><div class="detail-val">${l.phone || '—'}</div></div>
+      <div class="detail-row"><div class="detail-key">Rating</div><div class="detail-val">${l.rating ? `★ ${l.rating} &nbsp;·&nbsp; ${l.review_count} reviews` : '—'}</div></div>
+      <div class="detail-row"><div class="detail-key">Website</div><div class="detail-val">${l.website ? `<a href="${esc(l.website)}" target="_blank">${esc(l.website)}</a>` : '<span style="color:var(--danger)">None</span>'}${l.site_platform && l.site_platform !== 'unknown' ? ` <span style="font-size:11px; color:var(--warn); text-transform:capitalize;">(${l.site_platform} template)</span>` : ''}</div></div>
+      ${l.has_free_email ? `<div class="detail-row"><div class="detail-key">Email</div><div class="detail-val" style="color:var(--warn);">Uses Gmail — unprofessional signal</div></div>` : ''}
+      <div class="detail-row"><div class="detail-key">Google Maps</div><div class="detail-val"><a href="${esc(l.google_maps_url || '#')}" target="_blank">View on Maps ↗</a></div></div>
+      <div class="detail-row"><div class="detail-key">Category</div><div class="detail-val">${types || '—'}</div></div>
+      <div class="detail-row"><div class="detail-key">Google Maps rank</div><div class="detail-val" style="color:${l.in_3pack ? 'var(--accent)' : l.search_rank <= 10 ? 'var(--warn)' : '#f87171'}">${l.search_rank ? '#' + l.search_rank + ' — ' + l.rank_label : '—'}</div></div>
+
+      <div class="detail-row"><div class="detail-key">Status</div><div class="detail-val">${l.business_status || 'Operational'}</div></div>
+    </div>
+    <div>
+      <div class="detail-key" style="margin-bottom:5px;">Opportunity score</div>
+      <div style="font-size:28px; font-weight:600; margin-bottom:4px; color:${(l.score||0)>=70?'var(--accent)':(l.score||0)>=40?'var(--warn)':'#f87171'}">${l.score ?? '?'}<span style="font-size:13px; color:var(--muted); font-weight:400"> / 100</span></div>
+      <div class="score-bar-wrap"><div class="score-bar" style="width:${l.score ?? 0}%"></div></div>
+      <div style="font-size:11px; color:var(--muted2); margin-top:6px;">Google Maps rank #${l.search_rank || '?'} of 60 &nbsp;·&nbsp; rank score: ${l.base_score || '?'}/35 &nbsp;·&nbsp; ${l.site_audited ? 'website audit complete' : l.website ? 'auditing website...' : 'no website'}</div>
+      ${l.psi ? `<div style="display:flex; gap:12px; flex-wrap:wrap; margin-top:10px; font-size:12px;">
+        <span style="color:var(--muted)">Mobile speed: <strong style="color:${l.psi.performance>=75?'var(--accent)':l.psi.performance>=50?'var(--warn)':'#f87171'}">${l.psi.performance}/100</strong></span>
+        <span style="color:var(--muted)">SEO: <strong style="color:${l.psi.seo>=75?'var(--accent)':l.psi.seo>=50?'var(--warn)':'#f87171'}">${l.psi.seo}/100</strong></span>
+        <span style="color:var(--muted)">Best practices: <strong style="color:${l.psi.best_practices>=75?'var(--accent)':l.psi.best_practices>=50?'var(--warn)':'#f87171'}">${l.psi.best_practices}/100</strong></span>
+        <span style="color:var(--muted)">Mobile-friendly: <strong style="color:${l.psi.mobile_friendly?'var(--accent)':'#f87171'}">${l.psi.mobile_friendly?'Yes':'No'}</strong></span>
+        <span style="color:var(--muted)">SSL: <strong style="color:${l.ssl?'var(--accent)':'#f87171'}">${l.ssl?'Secure':'Missing'}</strong></span>
+      </div>` : ''}
+      ${l.psi && l.psi.issues && l.psi.issues.length > 0 ? `<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;">${l.psi.issues.map(iss=>'<span class=\"issue-tag\">' + esc(iss) + '</span>').join('')}</div>` : ''}
+    </div>
+    ${l.website && l.website_grade ? `
+    <div style="margin-top:14px;">
+      <div class="detail-key" style="margin-bottom:8px;">Website Quality Report</div>
+      <div class="web-check-row">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
+          <span style="font-size:13px; font-weight:600;">Overall Grade</span>
+          <span style="font-size:22px; font-weight:700; color:${{'A':'var(--accent)','B':'#60a5fa','C':'var(--warn)','D':'#f87171','F':'#ef4444'}[l.website_grade] || 'var(--muted)'};">${l.website_grade}</span>
+        </div>
+        <div style="display:flex; gap:14px; flex-wrap:wrap; font-size:12px;">
+          <span style="color:var(--muted)">SSL: <strong style="color:${l.website_ssl ? 'var(--accent)' : '#f87171'}">${l.website_ssl ? 'Secure' : 'Missing'}</strong></span>
+          ${l.seo_score !== null && l.seo_score !== undefined ? `<span style="color:var(--muted)">SEO score: <strong style="color:${l.seo_score>=75?'var(--accent)':l.seo_score>=50?'var(--warn)':'#f87171'}">${l.seo_score}/100</strong></span>` : ''}
+          <span style="color:var(--muted)">Mobile speed: <strong style="color:${(l.website_mobile_score||0)>=75?'var(--accent)':(l.website_mobile_score||0)>=50?'var(--warn)':'#f87171'}">${l.website_mobile_score !== null && l.website_mobile_score !== undefined ? l.website_mobile_score+'/100' : 'N/A'}</strong></span>
+          ${l.website_domain_age !== null && l.website_domain_age !== undefined ? `<span style="color:var(--muted)">Age: <strong style="color:${l.website_domain_age>=12?'#f87171':'var(--text)'}">${l.website_domain_age} yrs</strong></span>` : ''}
+        </div>
+        ${l.website_issues && l.website_issues.length > 0 ? '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;">' + (l.website_issues||[]).map(iss => '<span class=\"issue-tag\">' + esc(iss) + '</span>').join('') + '</div>' : '<div style="margin-top:6px;font-size:12px;color:var(--accent);">No major issues</div>'}
+        ${l.website_issues && l.website_issues.length > 0 ? '<div style="margin-top:8px;font-size:11px;color:var(--muted);">Use these issues in your pitch — show them what is broken before offering to fix it.</div>' : ''}
+      </div>
+    </div>` : ''}
+  </div>`;
+}
+
+// ─── Pipeline ──────────────────────────────────────────────────────────────
+async function loadPipeline() {
+  try {
+    const r = await fetch(API + '/api/pipeline');
+    pipeline = await r.json();
+    updatePipelineCount();
+  } catch { pipeline = []; }
+}
+
+async function saveLead(i) {
+  const l = leads[i];
+  if (pipeline.find(p => p.place_id === l.place_id)) return;
+  await fetch(API + '/api/pipeline', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(l)
+  });
+  await loadPipeline();
+  document.getElementById('s-pipe').textContent = pipeline.length;
+  renderLeads(document.getElementById('leads-container'));
+}
+
+function updatePipelineCount() {
+  const el = document.getElementById('pipeline-count');
+  el.textContent = pipeline.length || '';
+  document.getElementById('s-pipe').textContent = pipeline.length;
+}
+
+async function updateStatus(placeId, status) {
+  await fetch(API + '/api/pipeline/' + encodeURIComponent(placeId), {
+    method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ status })
+  });
+  await loadPipeline();
+}
+
+async function removePipeline(placeId) {
+  await fetch(API + '/api/pipeline/' + encodeURIComponent(placeId), { method: 'DELETE' });
+  await loadPipeline();
+  renderPipeline();
+}
+
+function renderPipeline() {
+  const container = document.getElementById('pipeline-container');
+  if (!pipeline.length) {
+    container.innerHTML = `<div class="empty"><p>No leads saved yet. Search for leads and click "+ Pipeline"</p></div>`;
+    return;
+  }
+  const statusColors = { new: 'status-new', contacted: 'status-contacted', demo: 'status-demo', closed: 'status-closed', lost: 'status-lost' };
+  container.innerHTML = `<div class="table-wrap"><table class="pipeline-table">
+    <thead><tr><th>Business</th><th>Rating</th><th>Score</th><th>Status</th><th>Added</th><th></th></tr></thead>
+    <tbody>${pipeline.map(l => `
+    <tr>
+      <td>
+        <div style="font-weight:500;">${esc(l.name)}</div>
+        <div class="notes-mini">${esc((l.address || '').split(',').slice(0,2).join(','))}</div>
+        ${(l.notes || []).length ? `<div class="notes-mini" style="color:var(--muted2);">${(l.notes||[]).length} note${(l.notes||[]).length>1?'s':''}</div>` : ''}
+      </td>
+      <td>${l.rating ? `★ ${l.rating}` : '—'}</td>
+      <td><span class="lead-score ${(l.score||0)>=70?'score-high':(l.score||0)>=40?'score-mid':'score-low'}">${l.score ?? '?'}</span></td>
+      <td>
+        <select class="status-sel ${statusColors[l.status]||''}" onchange="updateStatus('${esc(l.place_id)}', this.value)">
+          <option value="new" ${l.status==='new'?'selected':''}>New</option>
+          <option value="contacted" ${l.status==='contacted'?'selected':''}>Contacted</option>
+          <option value="demo" ${l.status==='demo'?'selected':''}>Demo</option>
+          <option value="closed" ${l.status==='closed'?'selected':''}>Closed ✓</option>
+          <option value="lost" ${l.status==='lost'?'selected':''}>Lost</option>
+        </select>
+      </td>
+      <td style="color:var(--muted); font-size:12px;">${new Date(l.added).toLocaleDateString()}</td>
+      <td>
+        <div style="display:flex; gap:6px;">
+          <button class="btn btn-sm" onclick="openNotes('${esc(l.place_id)}')">Notes</button>
+          <button class="btn btn-sm btn-danger" onclick="removePipeline('${esc(l.place_id)}')">✕</button>
+        </div>
+      </td>
+    </tr>`).join('')}
+    </tbody></table></div>`;
+}
+
+// ─── Notes ─────────────────────────────────────────────────────────────────
+function openNotes(placeId) {
+  notesLead = pipeline.find(l => l.place_id === placeId);
+  if (!notesLead) return;
+  document.getElementById('notes-title').textContent = `Notes — ${notesLead.name}`;
+  const notes = notesLead.notes || [];
+  document.getElementById('notes-list').innerHTML = notes.map(n => `
+    <div class="note-item">${esc(n.text)}<div class="note-ts">${new Date(n.ts).toLocaleString()}</div></div>`).join('');
+  document.getElementById('notes-input').value = '';
+  document.getElementById('notes-modal').classList.add('show');
+}
+
+function closeNotes() {
+  document.getElementById('notes-modal').classList.remove('show');
+  notesLead = null;
+}
+
+async function saveNote() {
+  const text = document.getElementById('notes-input').value.trim();
+  if (!text || !notesLead) return;
+  await fetch(API + '/api/pipeline/' + encodeURIComponent(notesLead.place_id) + '/notes', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ text })
+  });
+  await loadPipeline();
+  closeNotes();
+  renderPipeline();
+}
+
+document.getElementById('notes-modal').addEventListener('click', e => {
+  if (e.target === document.getElementById('notes-modal')) closeNotes();
+});
+
+// ─── Outreach ──────────────────────────────────────────────────────────────
+function populateOutreachSelect() {
+  const sel = document.getElementById('outreach-lead-sel');
+  sel.innerHTML = '<option value="">— Select a lead —</option>' +
+    pipeline.map(l => `<option value="${esc(l.place_id)}">${esc(l.name)}</option>`).join('');
+  if (currentLead) sel.value = currentLead.place_id;
+}
+
+function setOutreachType(btn) {
+  document.querySelectorAll('.outreach-type-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  outreachType = btn.dataset.type;
+}
+
+function openOutreach(i) {
+  const lead = leads[i];
+  if (!pipeline.find(p => p.place_id === lead.place_id)) {
+    // Auto-save
+    fetch(API + '/api/pipeline', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(lead)
+    }).then(() => loadPipeline());
+  }
+  currentLead = lead;
+  showPage('outreach', document.querySelectorAll('.nav-item')[2]);
+  setTimeout(() => { populateOutreachSelect(); generateOutreach(); }, 100);
+}
+
+async function generateOutreach() {
+  const sel = document.getElementById('outreach-lead-sel');
+  const placeId = sel?.value;
+  const lead = placeId ? pipeline.find(l => l.place_id === placeId) || currentLead : currentLead;
+  if (!lead) {
+    document.getElementById('outreach-result').innerHTML = `<div class="empty"><p>Select a lead from the dropdown above</p></div>`;
+    return;
+  }
+
+  const typeLabels = { email: 'email', sms: 'SMS', call: 'call script', dm: 'social DM' };
+  document.getElementById('outreach-result').innerHTML = `<div class="loading"><span class="spinner"></span> Writing ${typeLabels[outreachType]}…</div>`;
+
+  try {
+    const r = await fetch(API + '/api/outreach', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ lead, type: outreachType })
+    });
+    const d = await r.json();
+    const script = d.script || '';
+    let subject = '';
+    let body = script;
+    if (outreachType === 'email' && script.startsWith('Subject:')) {
+      const lines = script.split('\n');
+      subject = lines[0].replace('Subject:', '').trim();
+      body = lines.slice(1).join('\n').trim();
+    }
+    document.getElementById('outreach-result').innerHTML = `
+      <div class="script-box">
+        ${subject ? `<div class="script-subject">Subject: <strong>${esc(subject)}</strong></div>` : ''}
+        <div class="script-body">${esc(body)}</div>
+      </div>
+      <div style="display:flex; gap:8px; margin-top:12px;">
+        <button class="btn btn-sm" onclick="copyScript()">⎘ Copy</button>
+        <button class="btn btn-sm" onclick="generateOutreach()">↺ Regenerate</button>
+      </div>`;
+  } catch {
+    document.getElementById('outreach-result').innerHTML = `<div class="empty"><p style="color:var(--danger)">Generation failed. Check server logs.</p></div>`;
+  }
+}
+
+function copyScript() {
+  const box = document.querySelector('.script-body');
+  const sub = document.querySelector('.script-subject');
+  const text = (sub ? sub.textContent + '\n\n' : '') + (box ? box.textContent : '');
+  navigator.clipboard.writeText(text.trim()).catch(() => {});
+}
+
+// ─── Utils ─────────────────────────────────────────────────────────────────
+function esc(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+async function checkWebsite(i) {
+  const l = leads[i];
+  if (!l.website) return;
+  const detailEl = document.getElementById('detail-' + i);
+  if (!detailEl || detailEl.style.display === 'none') toggleDetail(i);
+  const safeId = l.place_id.replace(/[^a-z0-9]/gi, '_');
+  let checkEl = document.getElementById('wc-' + safeId);
+  if (!checkEl) {
+    const detailEl2 = document.getElementById('detail-' + i);
+    if (detailEl2) {
+      const div = document.createElement('div');
+      div.id = 'wc-' + safeId;
+      detailEl2.querySelector('.detail-drawer').appendChild(div);
+      checkEl = div;
+    }
+  }
+  if (checkEl) checkEl.innerHTML = '<div style="margin-top:12px;font-size:13px;color:var(--muted);display:flex;align-items:center;gap:8px;"><span class=\"spinner\"></span> Checking website quality...</div>';
+  try {
+    const r = await fetch('/api/website-check?url=' + encodeURIComponent(l.website));
+    const d = await r.json();
+    leads[i].website_grade = d.grade;
+    const gradeColors = {A:'var(--accent)',B:'#60a5fa',C:'var(--warn)',D:'#f87171',F:'#ef4444'};
+    const gc = gradeColors[d.grade] || 'var(--muted)';
+    const issuesHtml = (d.issues||[]).map(iss => '<span class=\"issue-tag\">' + esc(iss) + '</span>').join('');
+    const html = '<div class=\"web-check-row\">'
+      + '<div style=\"display:flex;align-items:center;justify-content:space-between;\">'
+      + '<span style=\"font-weight:600;\">Website Quality Report</span>'
+      + '<span style=\"font-size:20px;font-weight:700;color:' + gc + '\">Grade: ' + d.grade + '</span>'
+      + '</div>'
+      + '<div style=\"display:flex;gap:16px;margin-top:8px;flex-wrap:wrap;\">'
+      + '<span style=\"color:var(--muted)\">SSL: <strong style=\"color:' + (d.ssl ? 'var(--accent)' : '#f87171') + '\">' + (d.ssl ? 'Secure' : 'Missing') + '</strong></span>'
+      + '<span style=\"color:var(--muted)\">Mobile speed: <strong style=\"color:' + ((d.mobile_score||0)>=75?'var(--accent)':(d.mobile_score||0)>=50?'var(--warn)':'#f87171') + '\">' + (d.mobile_score !== null ? d.mobile_score + '/100' : 'N/A') + '</strong></span>'
+      + (d.domain_age_years !== null ? '<span style=\"color:var(--muted)\">Domain age: <strong>' + d.domain_age_years + ' years</strong></span>' : '')
+      + (d.domain_registered ? '<span style=\"color:var(--muted)\">Registered: <strong>' + d.domain_registered + '</strong></span>' : '')
+      + '</div>'
+      + (issuesHtml ? '<div style=\"display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;\">' + issuesHtml + '</div>' : '<div style=\"margin-top:6px;color:var(--accent);font-size:12px;\">No major issues found</div>')
+      + (d.issues && d.issues.length ? '<div style=\"margin-top:8px;font-size:12px;color:var(--muted)\">Tip: Use these issues in your pitch — show them what is wrong before offering to fix it.</div>' : '')
+      + '</div>';
+    if (checkEl) checkEl.innerHTML = html;
+    renderLeads(document.getElementById('leads-container'));
+  } catch(e) {
+    if (checkEl) checkEl.innerHTML = '<div style=\"margin-top:8px;font-size:12px;color:var(--danger)\">Could not check website.</div>';
+  }
+}
+
+init();
+</script>
+</body>
+</html>
