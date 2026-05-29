@@ -454,7 +454,10 @@
 
   <!-- ── PIPELINE PAGE ── -->
   <div id="page-pipeline" style="display:none;">
-    <div class="page-title">Pipeline</div>
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:4px;">
+      <div class="page-title">Pipeline</div>
+      <button class="btn btn-accent btn-sm" onclick="exportPipelineCSV()">↓ Export CSV</button>
+    </div>
     <div class="page-sub">Track your saved leads from first contact to closed deal</div>
     <div id="pipeline-container">
       <div class="empty">
@@ -1120,6 +1123,37 @@ function updateSelectionUI() {
   });
   const allChecked = leads.length > 0 && selectedIndices.size === leads.length;
   document.getElementById('select-all').checked = allChecked;
+}
+
+function exportPipelineCSV() {
+  if (!pipeline.length) { alert('Your pipeline is empty.'); return; }
+  const headers = ['Name','Address','Phone','Website','Rating','Reviews','Google Maps Rank','Status','No Website','Hidden Gem','Opportunity Score','Pitch Reason','Notes','Added','Google Maps URL'];
+  const rows = pipeline.map(l => [
+    l.name || '',
+    l.address || '',
+    l.phone || '',
+    l.website || '',
+    l.rating || '',
+    l.review_count || '',
+    l.search_rank || '',
+    l.status || 'new',
+    l.no_website ? 'Yes' : 'No',
+    l.is_hidden_gem ? 'Yes' : 'No',
+    l.score || '',
+    l.pitch_reason || '',
+    (l.notes || []).map(n => n.text).join(' | '),
+    l.added ? new Date(l.added).toLocaleDateString() : '',
+    l.google_maps_url || ''
+  ].map(v => '"' + String(v).replace(/"/g, '""') + '"'));
+
+  const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'leadminer-pipeline-' + new Date().toISOString().slice(0,10) + '.csv';
+  a.click();
+  URL.revokeObjectURL(url);
 }
 
 function exportCSV() {
