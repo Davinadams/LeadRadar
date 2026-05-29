@@ -1155,13 +1155,22 @@ function updateSelectionUI() {
   document.getElementById('select-all').checked = allChecked;
 }
 
+// ─── Format phone to E.164 for GoHighLevel (+1XXXXXXXXXX) ──────────────────────
+function formatPhone(phone) {
+  if (!phone) return '';
+  const digits = phone.replace(/\D/g, '');
+  if (digits.length === 10) return '+1' + digits;
+  if (digits.length === 11 && digits[0] === '1') return '+' + digits;
+  return phone; // return as-is if can't parse
+}
+
 function exportPipelineCSV() {
   if (!pipeline.length) { alert('Your pipeline is empty.'); return; }
   const headers = ['Name','Address','Phone','Website','Rating','Reviews','Google Maps Rank','Status','No Website','Hidden Gem','Opportunity Score','Pitch Reason','Notes','Added','Google Maps URL'];
   const rows = pipeline.map(l => [
     l.name || '',
     l.address || '',
-    l.phone || '',
+    formatPhone(l.phone),
     l.website || '',
     l.rating || '',
     l.review_count || '',
@@ -1194,7 +1203,7 @@ function exportCSV() {
   const rows = selected.map(l => [
     l.name || '',
     l.address || '',
-    l.phone || '',
+    formatPhone(l.phone),
     l.website || '',
     l.rating || '',
     l.review_count || '',
