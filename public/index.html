@@ -433,6 +433,15 @@
       </div>
     </div>
 
+    <div id="bulk-toolbar" style="display:none; align-items:center; gap:12px; margin-bottom:12px; background:var(--bg2); border:1px solid var(--border); border-radius:var(--radius); padding:10px 16px;">
+      <input type="checkbox" id="select-all" onchange="toggleSelectAll(this)" style="width:16px; height:16px; cursor:pointer; accent-color:var(--accent);">
+      <label for="select-all" style="font-size:13px; color:var(--muted); cursor:pointer;">Select all</label>
+      <span id="selected-count" style="font-size:13px; color:var(--text);">0 selected</span>
+      <button class="btn btn-accent btn-sm" onclick="exportCSV()" style="margin-left:auto;">
+        ↓ Export CSV
+      </button>
+      <button class="btn btn-sm" onclick="clearSelection()">Clear</button>
+    </div>
     <div class="stats">
       <div class="stat"><div class="stat-label">Found</div><div class="stat-val" id="s-found">—</div></div>
       <div class="stat"><div class="stat-label">No website</div><div class="stat-val green" id="s-noweb">—</div></div>
@@ -575,6 +584,7 @@ async function searchLeads() {
     document.getElementById('s-gems').textContent = leads.filter(l => l.is_hidden_gem).length;
 
     applyFilters();
+    document.getElementById('bulk-toolbar').style.display = 'flex';
     // Run AI digital presence scoring in background
     runAIScoring(industry, location);
 
@@ -597,9 +607,12 @@ function renderLeads(container) {
   container.innerHTML = leads.map((l, i) => `
     <div class="lead-card" id="lc-${i}" onclick="toggleDetail(${i})">
       <div class="lead-top">
-        <div>
-          <div class="lead-name">${esc(l.name)}</div>
-          <div class="lead-addr">${esc(l.address || '')}</div>
+        <div style="display:flex; align-items:flex-start; gap:10px;">
+          <input type="checkbox" class="lead-checkbox" data-i="${i}" onchange="onLeadCheck(this)" onclick="event.stopPropagation()" style="width:16px; height:16px; margin-top:3px; cursor:pointer; flex-shrink:0; accent-color:var(--accent);">
+          <div>
+            <div class="lead-name">${esc(l.name)}</div>
+            <div class="lead-addr">${esc(l.address || '')}</div>
+          </div>
         </div>
         <div style="display:flex; align-items:center; gap:8px; flex-shrink:0;">
           ${l.score != null ? `<span class="lead-score ${l.score >= 70 ? 'score-high' : l.score >= 40 ? 'score-mid' : 'score-low'}" title="Opportunity score — higher means weaker digital presence">${l.score}/100</span>` : ''}
@@ -1074,6 +1087,78 @@ async function checkWebsite(i) {
   } catch(e) {
     if (checkEl) checkEl.innerHTML = '<div style=\"margin-top:8px;font-size:12px;color:var(--danger)\">Could not check website.</div>';
   }
+}
+
+// ─── Selection & CSV Export ───────────────────────────────────────────────────
+let selectedIndices = new Set();
+
+function onLeadCheck(cb) {
+  const i = parseInt(cb.dataset.i);
+  if (cb.checked) selectedIndices.add(i);
+  else selectedIndices.delete(i);
+  updateSelectionUI();
+}
+
+function toggleSelectAll(cb) {
+  selectedIndices.clear();
+  if (cb.checked) {
+    leads.forEach((l, i) => selectedIndices.add(i));
+  }
+  // Re-render to update checkboxes
+  renderLeads(document.getElementById('leads-container'));
+  updateSelectionUI();
+}
+
+function clearSelection() {
+  selectedIndices.clear();
+  document.getElementById('select-all').checked = false;
+  renderLeads(document.getElementById('leads-container'));
+  updateSelectionUI();
+}
+
+function updateSelectionUI() {
+  const count = selectedIndices.size;
+  const toolbar = document.getElementById('bulk-toolbar');
+  const countEl = document.getElementById('selected-count');
+  toolbar.style.display = 'flex';
+  countEl.textContent = count + ' selected';
+  // Update all checkboxes to match selectedIndices
+  document.querySelectorAll('.lead-checkbox').forEach(cb => {
+    cb.checked = selectedIndices.has(parseInt(cb.dataset.i));
+  });
+  const allChecked = leads.length > 0 && selectedIndices.size === leads.length;
+  document.getElementById('select-all').checked = allChecked;
+}
+
+function exportCSV() {
+  const selected = [...selectedIndices].map(i => leads[i]).filter(Boolean);
+  if (!selected.length) { alert('Select at least one lead first.'); return; }
+
+  const headers = ['Name','Address','Phone','Website','Rating','Reviews','Google Maps Rank','No Website','Hidden Gem','In Top 3','Opportunity Score','Pitch Reason','Google Maps URL'];
+  const rows = selected.map(l => [
+    l.name || '',
+    l.address || '',
+    l.phone || '',
+    l.website || '',
+    l.rating || '',
+    l.review_count || '',
+    l.search_rank || '',
+    l.no_website ? 'Yes' : 'No',
+    l.is_hidden_gem ? 'Yes' : 'No',
+    l.in_3pack ? 'Yes' : 'No',
+    l.score || '',
+    l.pitch_reason || '',
+    l.google_maps_url || ''
+  ].map(v => '"' + String(v).replace(/"/g, '""') + '"'));
+
+  const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'leadminer-export-' + new Date().toISOString().slice(0,10) + '.csv';
+  a.click();
+  URL.revokeObjectURL(url);
 }
 
 init();
