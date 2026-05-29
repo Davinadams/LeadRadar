@@ -1166,24 +1166,54 @@ function formatPhone(phone) {
 
 function exportPipelineCSV() {
   if (!pipeline.length) { alert('Your pipeline is empty.'); return; }
-  const headers = ['Name','Address','Phone','Website','Rating','Reviews','Google Maps Rank','Status','No Website','Hidden Gem','Opportunity Score','Pitch Reason','Notes','Added','Google Maps URL'];
-  const rows = pipeline.map(l => [
-    l.name || '',
-    l.address || '',
-    formatPhone(l.phone),
-    l.website || '',
-    l.rating || '',
-    l.review_count || '',
-    l.search_rank || '',
-    l.status || 'new',
-    l.no_website ? 'Yes' : 'No',
-    l.is_hidden_gem ? 'Yes' : 'No',
-    l.score || '',
-    l.pitch_reason || '',
-    (l.notes || []).map(n => n.text).join(' | '),
-    l.added ? new Date(l.added).toLocaleDateString() : '',
-    l.google_maps_url || ''
-  ].map(v => '"' + String(v).replace(/"/g, '""') + '"'));
+  const headers = ['First Name','Last Name','Phone','Email','Address','City','State','Website','Website Status','Site Platform','Google Maps Rank','Rating','Reviews','Status','No Website','Hidden Gem','Opportunity Score','Pitch Reason','Call Script Notes','Notes','Tags','Lead Source','Business Type','Added','Google Maps URL'];
+  const rows = pipeline.map(l => {
+    const nameParts = (l.name || '').split(' ');
+    const firstName = nameParts[0] || l.name || '';
+    const lastName = nameParts.slice(1).join(' ') || '';
+    const addrParts = (l.address || '').split(',');
+    const street = addrParts[0]?.trim() || '';
+    const city = addrParts[1]?.trim() || '';
+    const state = addrParts[2]?.trim()?.split(' ')[0] || '';
+    const tags = [
+      l.no_website ? 'no-website' : 'has-website',
+      l.is_hidden_gem ? 'hidden-gem' : '',
+      l.in_3pack ? 'top-3-maps' : '',
+      l.site_platform && l.site_platform !== 'unknown' ? l.site_platform + '-site' : '',
+      (l.score || 0) >= 70 ? 'high-opportunity' : (l.score || 0) >= 40 ? 'mid-opportunity' : 'low-opportunity',
+      l.search_rank <= 10 ? 'rank-1-10' : l.search_rank <= 20 ? 'rank-11-20' : l.search_rank <= 40 ? 'rank-21-40' : 'rank-41-60',
+      'pipeline-' + (l.status || 'new'),
+    ].filter(Boolean).join(';');
+    const callNotes = l.pitch_reason ? 'PITCH: ' + l.pitch_reason + ' | Google Maps: ' + (l.google_maps_url || '') : '';
+    const websiteStatus = l.no_website ? 'No Website' : l.site_platform && l.site_platform !== 'unknown' ? (l.site_platform.charAt(0).toUpperCase() + l.site_platform.slice(1)) + ' Template' : 'Has Website';
+    return [
+      firstName,
+      lastName,
+      formatPhone(l.phone),
+      '',
+      street,
+      city,
+      state,
+      l.website || '',
+      websiteStatus,
+      l.site_platform && l.site_platform !== 'unknown' ? l.site_platform : '',
+      l.search_rank || '',
+      l.rating || '',
+      l.review_count || '',
+      l.status || 'new',
+      l.no_website ? 'Yes' : 'No',
+      l.is_hidden_gem ? 'Yes' : 'No',
+      l.score || '',
+      l.pitch_reason || '',
+      callNotes,
+      (l.notes || []).map(n => n.text).join(' | '),
+      tags,
+      'Lead Radar',
+      (l.types || []).filter(t => !['establishment','point_of_interest'].includes(t))[0] || '',
+      l.added ? new Date(l.added).toLocaleDateString() : '',
+      l.google_maps_url || ''
+    ].map(v => '"' + String(v).replace(/"/g, '""') + '"');
+  });
 
   const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
   const blob = new Blob([csv], { type: 'text/csv' });
@@ -1199,22 +1229,51 @@ function exportCSV() {
   const selected = [...selectedIndices].map(i => leads[i]).filter(Boolean);
   if (!selected.length) { alert('Select at least one lead first.'); return; }
 
-  const headers = ['Name','Address','Phone','Website','Rating','Reviews','Google Maps Rank','No Website','Hidden Gem','In Top 3','Opportunity Score','Pitch Reason','Google Maps URL'];
-  const rows = selected.map(l => [
-    l.name || '',
-    l.address || '',
-    formatPhone(l.phone),
-    l.website || '',
-    l.rating || '',
-    l.review_count || '',
-    l.search_rank || '',
-    l.no_website ? 'Yes' : 'No',
-    l.is_hidden_gem ? 'Yes' : 'No',
-    l.in_3pack ? 'Yes' : 'No',
-    l.score || '',
-    l.pitch_reason || '',
-    l.google_maps_url || ''
-  ].map(v => '"' + String(v).replace(/"/g, '""') + '"'));
+  const headers = ['First Name','Last Name','Phone','Email','Address','City','State','Website','Website Status','Site Platform','Google Maps Rank','Rating','Reviews','No Website','Hidden Gem','In Top 3','Opportunity Score','Pitch Reason','Call Script Notes','Tags','Lead Source','Business Type','Google Maps URL'];
+  const rows = selected.map(l => {
+    const nameParts = (l.name || '').split(' ');
+    const firstName = nameParts[0] || l.name || '';
+    const lastName = nameParts.slice(1).join(' ') || '';
+    const addrParts = (l.address || '').split(',');
+    const street = addrParts[0]?.trim() || '';
+    const city = addrParts[1]?.trim() || '';
+    const state = addrParts[2]?.trim()?.split(' ')[0] || '';
+    const tags = [
+      l.no_website ? 'no-website' : 'has-website',
+      l.is_hidden_gem ? 'hidden-gem' : '',
+      l.in_3pack ? 'top-3-maps' : '',
+      l.site_platform && l.site_platform !== 'unknown' ? l.site_platform + '-site' : '',
+      (l.score || 0) >= 70 ? 'high-opportunity' : (l.score || 0) >= 40 ? 'mid-opportunity' : 'low-opportunity',
+      l.search_rank <= 10 ? 'rank-1-10' : l.search_rank <= 20 ? 'rank-11-20' : l.search_rank <= 40 ? 'rank-21-40' : 'rank-41-60',
+    ].filter(Boolean).join(';');
+    const callNotes = l.pitch_reason ? 'PITCH: ' + l.pitch_reason + ' | Google Maps: ' + (l.google_maps_url || '') : '';
+    const websiteStatus = l.no_website ? 'No Website' : l.site_platform && l.site_platform !== 'unknown' ? (l.site_platform.charAt(0).toUpperCase() + l.site_platform.slice(1)) + ' Template' : 'Has Website';
+    return [
+      firstName,
+      lastName,
+      formatPhone(l.phone),
+      '',
+      street,
+      city,
+      state,
+      l.website || '',
+      websiteStatus,
+      l.site_platform && l.site_platform !== 'unknown' ? l.site_platform : '',
+      l.search_rank || '',
+      l.rating || '',
+      l.review_count || '',
+      l.no_website ? 'Yes' : 'No',
+      l.is_hidden_gem ? 'Yes' : 'No',
+      l.in_3pack ? 'Yes' : 'No',
+      l.score || '',
+      l.pitch_reason || '',
+      callNotes,
+      tags,
+      'Lead Radar',
+      (l.types || []).filter(t => !['establishment','point_of_interest'].includes(t))[0] || '',
+      l.google_maps_url || ''
+    ].map(v => '"' + String(v).replace(/"/g, '""') + '"');
+  });
 
   const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
   const blob = new Blob([csv], { type: 'text/csv' });
