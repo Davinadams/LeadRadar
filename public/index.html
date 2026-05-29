@@ -801,7 +801,7 @@ function buildDetail(l) {
     <h3>${esc(l.name)}</h3>
     <div class="detail-sub">${esc(l.address || '')}</div>
 
-    ${l.pitch_reason ? `<div class="opportunity">${esc(l.pitch_reason)}</div>` : l.no_website ? `<div class="opportunity">No website — direct opportunity to pitch your services.</div>` : ''}
+    ${l.pitch_reason ? `<div class="opportunity">${esc(l.pitch_reason)}</div>` : l.no_website ? `<div class="opportunity">No website — direct opportunity to pitch your services.</div>` : `<div class="opportunity" style="border-color:rgba(245,158,11,0.2);color:var(--warn);">Has website but ranks #${l.search_rank} on Google Maps — low visibility.</div>`}
     ${l.is_hidden_gem ? `<div class="opportunity" style="border-color:rgba(167,139,250,0.3); color:var(--purple);">◈ Hidden gem — ${l.rating} stars with only ${l.review_count} reviews. Well-loved locally but customers can't find them online. Easy close.</div>` : ''}
     ${l.score_breakdown ? `<div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px;">
       ${Object.entries(l.score_breakdown).map(([k,v]) => `<span style="font-size:11px; background:var(--bg3); padding:3px 8px; border-radius:20px; color:${v<=30?'#f87171':v<=60?'var(--warn)':'var(--accent)'};">${k.replace(/_/g,' ')}: ${v}</span>`).join('')}

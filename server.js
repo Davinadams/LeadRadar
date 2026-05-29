@@ -322,17 +322,20 @@ app.get('/api/site-audit', async (req, res) => {
 function generatePitchReason(l) {
   const rank = l.search_rank || 20;
   const reviews = l.review_count || 0;
-  const rankStr = `ranks #${rank} on Google Maps`;
-  if (!l.website && rank >= 30)  return `No website and ${rankStr} — virtually invisible to new customers`;
-  if (!l.website && rank >= 15)  return `No website and ${rankStr} — competitors are getting their customers`;
-  if (!l.website)                return `No website — ${rankStr} and missing out on online leads`;
-  if (l.site_platform === 'wix') return `Wix template site and ${rankStr} — a professional site could double their calls`;
-  if (l.site_platform === 'squarespace') return `Squarespace template and ${rankStr} — easy upgrade opportunity`;
-  if (l.has_free_email)          return `Using Gmail for business and ${rankStr} — not taken seriously online`;
-  if (rank >= 40)                return `${rankStr} — almost impossible for new customers to find them`;
-  if (rank >= 20)                return `${rankStr} — most customers never scroll this far`;
-  if (reviews < 10)              return `Only ${reviews} reviews and ${rankStr} — very low online presence`;
-  return `${rankStr} with room to grow their digital presence`;
+  const hasWebsite = !!l.website;
+  const rankStr = "ranks #" + rank + " on Google Maps";
+  if (!hasWebsite && rank >= 30) return "No website and " + rankStr + " — virtually invisible to new customers";
+  if (!hasWebsite && rank >= 15) return "No website and " + rankStr + " — competitors are getting their customers";
+  if (!hasWebsite)               return "No website — " + rankStr + " and missing out on online leads";
+  if (l.site_platform === 'wix')         return "Wix template site — " + rankStr + " and a generic site won't help them stand out";
+  if (l.site_platform === 'squarespace') return "Squarespace template — " + rankStr + " and limited to a cookie-cutter design";
+  if (l.site_platform === 'weebly')      return "Weebly site — " + rankStr + " and an outdated builder hurting credibility";
+  if (l.site_platform === 'godaddy')     return "GoDaddy template — " + rankStr + " and missing out on real SEO";
+  if (l.has_free_email)          return "Using Gmail for business — " + rankStr + " and not taken seriously online";
+  if (rank >= 40)                return "Has a website but " + rankStr + " — almost impossible for new customers to find";
+  if (rank >= 20)                return "Has a website but " + rankStr + " — most customers never scroll this far";
+  if (reviews < 10)              return "Only " + reviews + " reviews — " + rankStr + " and very low online credibility";
+  return rankStr + " — room to improve their digital presence";
 }
 
 app.post('/api/score-leads', async (req, res) => {
