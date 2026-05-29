@@ -240,8 +240,12 @@
     <div class="search-panel">
       <div class="search-row">
         <div class="field" style="flex:2;">
-          <label>Industry</label>
-          <input type="text" id="q-industry" list="industry-list" placeholder="Select industry...">
+          <label>Industry <span style="color:var(--muted2); font-size:10px; font-weight:400;">select multiple</span></label>
+          <div id="industry-tags" style="min-height:38px; border:1px solid var(--border); border-radius:var(--radius-sm); background:var(--bg3); padding:4px 8px; display:flex; flex-wrap:wrap; gap:4px; align-items:center; cursor:text;" onclick="document.getElementById('q-industry').focus()">
+            <input type="text" id="q-industry" list="industry-list" placeholder="Add industry..." autocomplete="off"
+              style="border:none; background:transparent; color:var(--text); font-size:14px; outline:none; flex:1; min-width:120px; height:28px;"
+              onkeydown="handleIndustryKey(event)">
+          </div>
         <datalist id="industry-list">
           <!-- Home Services -->
           <option value="Plumbers">
@@ -558,33 +562,49 @@ function showPage(name, el) {
 
 // ─── Lead search ───────────────────────────────────────────────────────────
 async function searchLeads() {
-  const industry = document.getElementById('q-industry').value.trim();
+  // Accept typed value as an industry if user hasn't pressed Enter
+  const typedVal = document.getElementById('q-industry').value.trim();
+  if (typedVal && !selectedIndustries.includes(typedVal)) addIndustryTag(typedVal);
+  document.getElementById('q-industry').value = '';
+
+  const industries = selectedIndustries.length ? selectedIndustries : [];
   const location = document.getElementById('q-location').value.trim();
-  if (!industry || !location) return;
+  if (!industries.length || !location) {
+    alert('Please add at least one industry and a location.');
+    return;
+  }
 
   const container = document.getElementById('leads-container');
-  container.innerHTML = `<div class="loading"><span class="spinner"></span> Scanning ${location} for ${industry}…</div>`;
+  container.innerHTML = `<div class="loading"><span class="spinner"></span> Scanning ${location} for ${industries.join(', ')}…</div>`;
 
   try {
-    const params = new URLSearchParams({ industry, location });
-    const r = await fetch(API + '/api/leads?' + params);
-    const d = await r.json();
+    // Search all industries in parallel and merge results
+    const allResults = await Promise.all(industries.map(async industry => {
+      const params = new URLSearchParams({ industry, location });
+      const r = await fetch(API + '/api/leads?' + params);
+      const d = await r.json();
+      return d.leads || [];
+    }));
 
-    if (d.error) {
-      container.innerHTML = `<div class="empty"><p style="color:var(--danger)">Error: ${d.message}</p></div>`;
-      return;
-    }
+    // Merge and deduplicate by place_id
+    const seen = new Set();
+    const merged = [];
+    allResults.flat().forEach(l => {
+      if (!seen.has(l.place_id)) { seen.add(l.place_id); merged.push(l); }
+    });
+    // Re-sort by score
+    merged.sort((a, b) => (b.score || 0) - (a.score || 0));
 
-    leads = d.leads || [];
-    allLeads = [...leads]; // keep full unfiltered set
-    document.getElementById('s-found').textContent = d.rawTotal ?? leads.length;
+    leads = merged;
+    allLeads = [...leads];
+    document.getElementById('s-found').textContent = leads.length;
     document.getElementById('s-noweb').textContent = leads.filter(l => l.no_website).length;
     document.getElementById('s-gems').textContent = leads.filter(l => l.is_hidden_gem).length;
 
     applyFilters();
     document.getElementById('bulk-toolbar').style.display = 'flex';
-    // Run AI digital presence scoring in background
-    runAIScoring(industry, location);
+    // Run AI scoring in background
+    runAIScoring(industries.join(', '), location);
 
   } catch(e) {
     container.innerHTML = `<div class="empty"><p style="color:var(--danger)">Could not reach server. Is it running?</p></div>`;
@@ -1185,6 +1205,60 @@ function exportCSV() {
   a.download = 'leadminer-export-' + new Date().toISOString().slice(0,10) + '.csv';
   a.click();
   URL.revokeObjectURL(url);
+}
+
+// ─── Multi-industry selection ─────────────────────────────────────────────────
+let selectedIndustries = [];
+
+function handleIndustryKey(e) {
+  const input = document.getElementById('q-industry');
+  const val = input.value.trim();
+  if ((e.key === 'Enter' || e.key === ',') && val) {
+    e.preventDefault();
+    addIndustryTag(val);
+    input.value = '';
+  } else if (e.key === 'Backspace' && !val && selectedIndustries.length) {
+    removeIndustryTag(selectedIndustries.length - 1);
+  }
+}
+
+// Also add tag when user picks from datalist
+document.addEventListener('DOMContentLoaded', () => {
+  const input = document.getElementById('q-industry');
+  if (input) {
+    input.addEventListener('change', () => {
+      const val = input.value.trim();
+      if (val) { addIndustryTag(val); input.value = ''; }
+    });
+  }
+});
+
+function addIndustryTag(val) {
+  if (!val || selectedIndustries.includes(val)) return;
+  selectedIndustries.push(val);
+  renderIndustryTags();
+}
+
+function removeIndustryTag(i) {
+  selectedIndustries.splice(i, 1);
+  renderIndustryTags();
+}
+
+function renderIndustryTags() {
+  const container = document.getElementById('industry-tags');
+  const input = document.getElementById('q-industry');
+  // Remove old tags
+  container.querySelectorAll('.industry-tag').forEach(t => t.remove());
+  // Add tags before input
+  selectedIndustries.forEach((ind, i) => {
+    const tag = document.createElement('span');
+    tag.className = 'industry-tag';
+    tag.style.cssText = 'background:var(--accent); color:#000; font-size:12px; padding:2px 8px; border-radius:20px; display:flex; align-items:center; gap:4px; white-space:nowrap; font-weight:500;';
+    tag.innerHTML = esc(ind) + '<span onclick="removeIndustryTag(' + i + ')" style="cursor:pointer; font-size:14px; line-height:1;">×</span>';
+    container.insertBefore(tag, input);
+  });
+  // Update placeholder
+  input.placeholder = selectedIndustries.length ? 'Add more...' : 'Add industry...';
 }
 
 init();
