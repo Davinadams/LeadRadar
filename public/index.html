@@ -408,17 +408,24 @@
             <option value="gt300">300+</option>
           </select>
         </div>
-        <div class="field" style="flex:1; min-width:130px;">
+        <div class="field" style="flex:1; min-width:130px; position:relative;">
           <label>Google rank</label>
-          <select id="f-rank" onchange="applyFilters()">
-            <option value="all">Any rank</option>
-            <option value="1to10">Rank #1 – 10</option>
-            <option value="11to20">Rank #11 – 20</option>
-            <option value="21to30">Rank #21 – 30</option>
-            <option value="31to40">Rank #31 – 40</option>
-            <option value="41to50">Rank #41 – 50</option>
-            <option value="51to60">Rank #51 – 60</option>
-          </select>
+          <div id="rank-btn" onclick="toggleRankDropdown()" style="height:38px; border:1px solid var(--border); border-radius:var(--radius-sm); background:var(--bg3); color:var(--text); padding:0 12px; font-size:14px; display:flex; align-items:center; justify-content:space-between; cursor:pointer; user-select:none;">
+            <span id="rank-btn-label">Any rank</span>
+            <span style="opacity:0.5;">▾</span>
+          </div>
+          <div id="rank-dropdown" style="display:none; position:absolute; top:62px; left:0; right:0; background:var(--bg2); border:1px solid var(--border); border-radius:var(--radius-sm); z-index:100; padding:8px 0; min-width:160px;">
+            <label style="display:flex; align-items:center; gap:8px; padding:6px 14px; font-size:13px; cursor:pointer; color:var(--muted);">
+              <input type="checkbox" id="rank-all" onchange="rankAllChanged(this)" checked style="accent-color:var(--accent);"> Any rank
+            </label>
+            <hr style="border-color:var(--border); margin:4px 0;">
+            <label style="display:flex; align-items:center; gap:8px; padding:6px 14px; font-size:13px; cursor:pointer;"><input type="checkbox" class="rank-cb" value="1to10" onchange="rankCbChanged()" style="accent-color:var(--accent);"> Rank #1 – 10</label>
+            <label style="display:flex; align-items:center; gap:8px; padding:6px 14px; font-size:13px; cursor:pointer;"><input type="checkbox" class="rank-cb" value="11to20" onchange="rankCbChanged()" style="accent-color:var(--accent);"> Rank #11 – 20</label>
+            <label style="display:flex; align-items:center; gap:8px; padding:6px 14px; font-size:13px; cursor:pointer;"><input type="checkbox" class="rank-cb" value="21to30" onchange="rankCbChanged()" style="accent-color:var(--accent);"> Rank #21 – 30</label>
+            <label style="display:flex; align-items:center; gap:8px; padding:6px 14px; font-size:13px; cursor:pointer;"><input type="checkbox" class="rank-cb" value="31to40" onchange="rankCbChanged()" style="accent-color:var(--accent);"> Rank #31 – 40</label>
+            <label style="display:flex; align-items:center; gap:8px; padding:6px 14px; font-size:13px; cursor:pointer;"><input type="checkbox" class="rank-cb" value="41to50" onchange="rankCbChanged()" style="accent-color:var(--accent);"> Rank #41 – 50</label>
+            <label style="display:flex; align-items:center; gap:8px; padding:6px 14px; font-size:13px; cursor:pointer;"><input type="checkbox" class="rank-cb" value="51to60" onchange="rankCbChanged()" style="accent-color:var(--accent);"> Rank #51 – 60</label>
+          </div>
         </div>
         <div class="field" style="flex:0; justify-content:flex-end; padding-top:16px;">
           <button class="btn btn-accent" onclick="searchLeads()">
@@ -673,7 +680,7 @@ let allLeads = [];
 function applyFilters() {
   const website = document.getElementById('f-website')?.value || 'all';
   const reviews = document.getElementById('f-reviews')?.value || 'all';
-  const rank    = document.getElementById('f-rank')?.value    || 'all';
+
   const container = document.getElementById('leads-container');
 
   leads = allLeads.filter(l => {
@@ -700,14 +707,17 @@ function applyFilters() {
     if (reviews === '250to300'&& !(r >= 250 && r < 300)) return false;
     if (reviews === 'gt300'   && !(r >= 300))        return false;
 
-    // Rank filter
-    const rk = l.search_rank || 999;
-    if (rank === '1to10'  && !(rk >= 1  && rk <= 10))  return false;
-    if (rank === '11to20' && !(rk >= 11 && rk <= 20))  return false;
-    if (rank === '21to30' && !(rk >= 21 && rk <= 30))  return false;
-    if (rank === '31to40' && !(rk >= 31 && rk <= 40))  return false;
-    if (rank === '41to50' && !(rk >= 41 && rk <= 50))  return false;
-    if (rank === '51to60' && !(rk >= 51 && rk <= 60))  return false;
+    // Rank filter — supports multiple selections
+    const selectedRanks = getSelectedRanks();
+    if (!selectedRanks.includes('all')) {
+      const rk = l.search_rank || 999;
+      const rankRanges = { '1to10':[1,10], '11to20':[11,20], '21to30':[21,30], '31to40':[31,40], '41to50':[41,50], '51to60':[51,60] };
+      const matches = selectedRanks.some(r => {
+        const range = rankRanges[r];
+        return range && rk >= range[0] && rk <= range[1];
+      });
+      if (!matches) return false;
+    }
 
     return true;
   });
@@ -1259,6 +1269,49 @@ function renderIndustryTags() {
   });
   // Update placeholder
   input.placeholder = selectedIndustries.length ? 'Add more...' : 'Add industry...';
+}
+
+// ─── Multi-rank filter ────────────────────────────────────────────────────────
+function toggleRankDropdown() {
+  const dd = document.getElementById('rank-dropdown');
+  dd.style.display = dd.style.display === 'none' ? 'block' : 'none';
+}
+
+// Close dropdown when clicking outside
+document.addEventListener('click', e => {
+  const btn = document.getElementById('rank-btn');
+  const dd = document.getElementById('rank-dropdown');
+  if (dd && btn && !btn.contains(e.target) && !dd.contains(e.target)) {
+    dd.style.display = 'none';
+  }
+});
+
+function rankAllChanged(cb) {
+  if (cb.checked) {
+    document.querySelectorAll('.rank-cb').forEach(c => c.checked = false);
+  }
+  updateRankLabel();
+  applyFilters();
+}
+
+function rankCbChanged() {
+  const any = document.querySelectorAll('.rank-cb:checked').length === 0;
+  document.getElementById('rank-all').checked = any;
+  updateRankLabel();
+  applyFilters();
+}
+
+function updateRankLabel() {
+  const checked = [...document.querySelectorAll('.rank-cb:checked')].map(c => c.value);
+  const label = document.getElementById('rank-btn-label');
+  if (!checked.length) { label.textContent = 'Any rank'; return; }
+  const names = { '1to10':'#1–10', '11to20':'#11–20', '21to30':'#21–30', '31to40':'#31–40', '41to50':'#41–50', '51to60':'#51–60' };
+  label.textContent = checked.map(v => names[v]).join(', ');
+}
+
+function getSelectedRanks() {
+  const checked = [...document.querySelectorAll('.rank-cb:checked')].map(c => c.value);
+  return checked.length ? checked : ['all'];
 }
 
 init();
