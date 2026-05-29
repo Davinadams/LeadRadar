@@ -850,8 +850,8 @@ function buildDetail(l) {
 // ─── Pipeline ──────────────────────────────────────────────────────────────
 async function loadPipeline() {
   try {
-    const r = await fetch(API + '/api/pipeline');
-    pipeline = await r.json();
+    const stored = localStorage.getItem('leadminer-pipeline');
+    pipeline = stored ? JSON.parse(stored) : [];
     updatePipelineCount();
   } catch { pipeline = []; }
 }
@@ -859,12 +859,9 @@ async function loadPipeline() {
 async function saveLead(i) {
   const l = leads[i];
   if (pipeline.find(p => p.place_id === l.place_id)) return;
-  await fetch(API + '/api/pipeline', {
-    method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(l)
-  });
-  await loadPipeline();
-  document.getElementById('s-pipe').textContent = pipeline.length;
+  pipeline.push({ ...l, status: 'new', added: new Date().toISOString() });
+  localStorage.setItem('leadminer-pipeline', JSON.stringify(pipeline));
+  updatePipelineCount();
   renderLeads(document.getElementById('leads-container'));
 }
 
@@ -875,16 +872,17 @@ function updatePipelineCount() {
 }
 
 async function updateStatus(placeId, status) {
-  await fetch(API + '/api/pipeline/' + encodeURIComponent(placeId), {
-    method: 'PATCH', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ status })
-  });
-  await loadPipeline();
+  const idx = pipeline.findIndex(l => l.place_id === placeId);
+  if (idx !== -1) {
+    pipeline[idx].status = status;
+    localStorage.setItem('leadminer-pipeline', JSON.stringify(pipeline));
+  }
 }
 
 async function removePipeline(placeId) {
-  await fetch(API + '/api/pipeline/' + encodeURIComponent(placeId), { method: 'DELETE' });
-  await loadPipeline();
+  pipeline = pipeline.filter(l => l.place_id !== placeId);
+  localStorage.setItem('leadminer-pipeline', JSON.stringify(pipeline));
+  updatePipelineCount();
   renderPipeline();
 }
 
@@ -946,11 +944,12 @@ function closeNotes() {
 async function saveNote() {
   const text = document.getElementById('notes-input').value.trim();
   if (!text || !notesLead) return;
-  await fetch(API + '/api/pipeline/' + encodeURIComponent(notesLead.place_id) + '/notes', {
-    method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ text })
-  });
-  await loadPipeline();
+  const idx = pipeline.findIndex(l => l.place_id === notesLead.place_id);
+  if (idx !== -1) {
+    const note = { text, ts: new Date().toISOString() };
+    pipeline[idx].notes = [...(pipeline[idx].notes || []), note];
+    localStorage.setItem('leadminer-pipeline', JSON.stringify(pipeline));
+  }
   closeNotes();
   renderPipeline();
 }
@@ -976,11 +975,9 @@ function setOutreachType(btn) {
 function openOutreach(i) {
   const lead = leads[i];
   if (!pipeline.find(p => p.place_id === lead.place_id)) {
-    // Auto-save
-    fetch(API + '/api/pipeline', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(lead)
-    }).then(() => loadPipeline());
+    pipeline.push({ ...lead, status: 'new', added: new Date().toISOString() });
+    localStorage.setItem('leadminer-pipeline', JSON.stringify(pipeline));
+    updatePipelineCount();
   }
   currentLead = lead;
   showPage('outreach', document.querySelectorAll('.nav-item')[2]);
