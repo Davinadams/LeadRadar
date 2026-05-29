@@ -106,7 +106,7 @@ async function enrichPlace(placeId, base, searchRank) {
       'name', 'formatted_address', 'formatted_phone_number',
       'website', 'rating', 'user_ratings_total',
       'opening_hours', 'types', 'url', 'business_status',
-      'photos'
+      'photos', 'reviews'
     ].join(',');
 
     const detailRes = await axios.get(
@@ -132,6 +132,8 @@ async function enrichPlace(placeId, base, searchRank) {
       no_website: !d.website,
       is_hidden_gem: (d.rating >= 4.5) && (d.user_ratings_total < 50) && (d.user_ratings_total > 3),
       photo_ref: d.photos?.[0]?.photo_reference || null,
+      // Last review timestamp
+      last_review_time: d.reviews?.[0]?.time || null,
       // Google Maps search ranking
       search_rank: searchRank || null,
       in_3pack: searchRank <= 3,

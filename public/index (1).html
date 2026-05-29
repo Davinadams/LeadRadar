@@ -408,6 +408,17 @@
             <option value="gt300">300+</option>
           </select>
         </div>
+        <div class="field" style="flex:1; min-width:130px;">
+          <label>Last Review</label>
+          <select id="f-last-review" onchange="applyFilters()">
+            <option value="all">Any time</option>
+            <option value="1mo">Within 1 month</option>
+            <option value="3mo">Within 3 months</option>
+            <option value="6mo">Within 6 months</option>
+            <option value="1yr">Within 1 year</option>
+            <option value="old">1+ years ago</option>
+          </select>
+        </div>
         <div class="field" style="flex:1; min-width:130px; position:relative;">
           <label>Google rank</label>
           <div id="rank-btn" onclick="toggleRankDropdown()" style="height:38px; border:1px solid var(--border); border-radius:var(--radius-sm); background:var(--bg3); color:var(--text); padding:0 12px; font-size:14px; display:flex; align-items:center; justify-content:space-between; cursor:pointer; user-select:none;">
@@ -654,6 +665,7 @@ function renderLeads(container) {
         ${l.search_rank ? `<span class="badge ${l.in_3pack ? 'b-rank-top' : l.search_rank <= 10 ? 'b-rank-mid' : 'b-rank-low'}">${l.in_3pack ? '★ ' : ''}#${l.search_rank} on Google Maps</span>` : ''}
 
         ${pipeline.find(p => p.place_id === l.place_id) ? `<span class="badge b-saved">✓ Saved</span>` : ''}
+        ${l.last_review_time ? (() => { const days = Math.round((Date.now()/1000 - l.last_review_time)/86400); const label = days < 30 ? days + 'd ago' : days < 365 ? Math.round(days/30) + 'mo ago' : Math.round(days/365) + 'yr ago'; const cls = days < 90 ? 'b-rank-top' : days < 365 ? 'b-rank-mid' : 'b-rank-low'; return `<span class="badge ${cls}" title="Last Google review">🕐 ${label}</span>`; })() : ''}
       </div>
       <div class="lead-footer">
         <button class="btn btn-sm" onclick="event.stopPropagation(); saveLead(${i})">+ Pipeline</button>
@@ -706,6 +718,20 @@ function applyFilters() {
     if (reviews === '200to250'&& !(r >= 200 && r < 250)) return false;
     if (reviews === '250to300'&& !(r >= 250 && r < 300)) return false;
     if (reviews === 'gt300'   && !(r >= 300))        return false;
+
+    // Last review filter
+    const lastReview = document.getElementById('f-last-review')?.value || 'all';
+    if (lastReview !== 'all') {
+      const now = Date.now() / 1000; // Unix timestamp in seconds
+      const t = l.last_review_time;
+      if (!t) return false; // no review data, exclude
+      const daysAgo = (now - t) / 86400;
+      if (lastReview === '1mo'  && daysAgo > 30)  return false;
+      if (lastReview === '3mo'  && daysAgo > 90)  return false;
+      if (lastReview === '6mo'  && daysAgo > 180) return false;
+      if (lastReview === '1yr'  && daysAgo > 365) return false;
+      if (lastReview === 'old'  && daysAgo <= 365) return false;
+    }
 
     // Rank filter — supports multiple selections
     const selectedRanks = getSelectedRanks();
