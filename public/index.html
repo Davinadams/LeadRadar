@@ -240,7 +240,10 @@
     <div class="search-panel">
       <div class="search-row">
         <div class="field" style="flex:2;">
-          <label>Industry <span style="color:var(--muted2); font-size:10px; font-weight:400;">select multiple</span></label>
+          <label style="display:flex;align-items:center;justify-content:space-between;">
+            <span>Industry <span style="color:var(--muted2); font-size:10px; font-weight:400;">select multiple</span></span>
+            <span onclick="selectAllIndustries()" style="font-size:11px;color:var(--accent);cursor:pointer;font-weight:500;">Select all</span>
+          </label>
           <div id="industry-tags" style="min-height:38px; border:1px solid var(--border); border-radius:var(--radius-sm); background:var(--bg3); padding:4px 8px; display:flex; flex-wrap:wrap; gap:4px; align-items:center; cursor:text;" onclick="document.getElementById('q-industry').focus()">
             <input type="text" id="q-industry" list="industry-list" placeholder="Add industry..." autocomplete="off"
               style="border:none; background:transparent; color:var(--text); font-size:14px; outline:none; flex:1; min-width:120px; height:28px;"
@@ -1385,6 +1388,13 @@ function exportCSV() {
 
 // ─── Multi-industry selection ─────────────────────────────────────────────────
 let selectedIndustries = [];
+
+const ALL_INDUSTRIES = ["Plumbers","Electricians","HVAC","Roofers","Painters","Landscapers","General Contractors","Handyman Services","Cleaning Services","Pest Control","Pool Services","Garage Door Repair","Flooring","Window Cleaning","Restaurants","Bakeries","Coffee Shops","Food Trucks","Catering Services","Bars","Hair Salons","Barbershops","Nail Salons","Spas","Massage Therapy","Tattoo Shops","Med Spas","Dentists","Chiropractors","Optometrists","Physical Therapy","Veterinarians","Gyms","Personal Trainers","Auto Repair","Auto Body Shops","Car Detailing","Towing","Accountants","Lawyers","Real Estate Agents","Insurance Agents","Photographers","Wedding Planners","Florists","Pet Grooming","Tutoring","Daycare Centers","Moving Companies","Junk Removal"];
+
+function selectAllIndustries() {
+  selectedIndustries = [...ALL_INDUSTRIES];
+  renderIndustryTags();
+}
 
 function handleIndustryKey(e) {
   const input = document.getElementById('q-industry');
