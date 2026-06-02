@@ -1003,11 +1003,11 @@ async function saveLead(i) {
 }
 
 async function addSelectedToPipeline() {
-  const checkboxes = document.querySelectorAll('.lead-cb:checked');
+  const checkboxes = document.querySelectorAll('.lead-checkbox:checked');
   if (!checkboxes.length) { alert('Select at least one lead first.'); return; }
   let added = 0;
   checkboxes.forEach(cb => {
-    const i = parseInt(cb.dataset.idx);
+    const i = parseInt(cb.dataset.i);
     const l = leads[i];
     if (l && !pipeline.find(p => p.place_id === l.place_id)) {
       pipeline.push({ ...l, status: 'new', added: new Date().toISOString() });
