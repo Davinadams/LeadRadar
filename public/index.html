@@ -674,22 +674,34 @@ async function searchLeads() {
   container.innerHTML = `<div class="loading"><span class="spinner"></span> Scanning ${locations.join(', ')} for ${industries.join(', ')}…</div>`;
 
   try {
-    // Search all industry+location combos in parallel and merge results
+    // Search all industry+location combos in batches of 5 to avoid throttling
     const combos = [];
     industries.forEach(industry => locations.forEach(location => combos.push({ industry, location })));
-    const allResults = await Promise.all(combos.map(async ({ industry, location }) => {
-      const params = new URLSearchParams({ industry, location });
-      const r = await fetch(API + '/api/leads?' + params);
-      const d = await r.json();
-      return d.leads || [];
-    }));
 
-    // Merge and deduplicate by place_id
     const seen = new Set();
     const merged = [];
-    allResults.flat().forEach(l => {
-      if (!seen.has(l.place_id)) { seen.add(l.place_id); merged.push(l); }
-    });
+    const BATCH = 5;
+
+    for (let i = 0; i < combos.length; i += BATCH) {
+      const batch = combos.slice(i, i + BATCH);
+      const batchResults = await Promise.all(batch.map(async ({ industry, location }) => {
+        try {
+          const params = new URLSearchParams({ industry, location });
+          const r = await fetch(API + '/api/leads?' + params);
+          const d = await r.json();
+          return d.leads || [];
+        } catch { return []; }
+      }));
+      batchResults.flat().forEach(l => {
+        if (!seen.has(l.place_id)) { seen.add(l.place_id); merged.push(l); }
+      });
+      // Update UI as results come in
+      document.getElementById('s-found').textContent = merged.length;
+      document.getElementById('s-noweb').textContent = merged.filter(l => l.no_website).length;
+      document.getElementById('s-gems').textContent = merged.filter(l => l.is_hidden_gem).length;
+      container.innerHTML = `<div class="loading"><span class="spinner"></span> Found ${merged.length} leads so far… (${Math.min(i + BATCH, combos.length)} of ${combos.length} searches done)</div>`;
+      if (i + BATCH < combos.length) await new Promise(r => setTimeout(r, 300)); // small delay between batches
+    }
     merged.sort((a, b) => (b.score || 0) - (a.score || 0));
 
     leads = merged;
