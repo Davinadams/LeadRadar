@@ -654,7 +654,6 @@ function showPage(name, el) {
 
 // ─── Lead search ───────────────────────────────────────────────────────────
 async function searchLeads() {
-  // Accept typed value as an industry if user hasn't pressed Enter
   const typedIndustry = document.getElementById('q-industry').value.trim();
   if (typedIndustry && !selectedIndustries.includes(typedIndustry)) addIndustryTag(typedIndustry);
   document.getElementById('q-industry').value = '';
@@ -665,6 +664,7 @@ async function searchLeads() {
 
   const industries = selectedIndustries.length ? selectedIndustries : [];
   const locations = selectedLocations.length ? selectedLocations : [];
+
   if (!industries.length || !locations.length) {
     alert('Please add at least one industry and one location.');
     return;
@@ -674,20 +674,22 @@ async function searchLeads() {
   container.innerHTML = `<div class="loading"><span class="spinner"></span> Scanning ${locations.join(', ')} for ${industries.join(', ')}…</div>`;
 
   try {
-    // Search all industry+location combos in batches of 5 to avoid throttling
     const combos = [];
     industries.forEach(industry => locations.forEach(location => combos.push({ industry, location })));
 
     const seen = new Set();
     const merged = [];
-    const BATCH = 5;
+    const BATCH = 3;
 
     for (let i = 0; i < combos.length; i += BATCH) {
       const batch = combos.slice(i, i + BATCH);
       const batchResults = await Promise.all(batch.map(async ({ industry, location }) => {
         try {
           const params = new URLSearchParams({ industry, location });
-          const r = await fetch(API + '/api/leads?' + params);
+          const controller = new AbortController();
+          const timer = setTimeout(() => controller.abort(), 15000);
+          const r = await fetch(API + '/api/leads?' + params, { signal: controller.signal });
+          clearTimeout(timer);
           const d = await r.json();
           return d.leads || [];
         } catch { return []; }
@@ -695,15 +697,14 @@ async function searchLeads() {
       batchResults.flat().forEach(l => {
         if (!seen.has(l.place_id)) { seen.add(l.place_id); merged.push(l); }
       });
-      // Update UI as results come in
       document.getElementById('s-found').textContent = merged.length;
       document.getElementById('s-noweb').textContent = merged.filter(l => l.no_website).length;
       document.getElementById('s-gems').textContent = merged.filter(l => l.is_hidden_gem).length;
       container.innerHTML = `<div class="loading"><span class="spinner"></span> Found ${merged.length} leads so far… (${Math.min(i + BATCH, combos.length)} of ${combos.length} searches done)</div>`;
-      if (i + BATCH < combos.length) await new Promise(r => setTimeout(r, 300)); // small delay between batches
+      if (i + BATCH < combos.length) await new Promise(r => setTimeout(r, 300));
     }
-    merged.sort((a, b) => (b.score || 0) - (a.score || 0));
 
+    merged.sort((a, b) => (b.score || 0) - (a.score || 0));
     leads = merged;
     allLeads = [...leads];
     document.getElementById('s-found').textContent = leads.length;
