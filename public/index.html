@@ -662,8 +662,11 @@ async function searchLeads() {
   if (typedLocation && !selectedLocations.includes(typedLocation)) addLocationTag(typedLocation);
   document.getElementById('q-location').value = '';
 
-  const industries = selectedIndustries.length ? selectedIndustries : [];
-  const locations = selectedLocations.length ? selectedLocations : [];
+  // Wait one tick to ensure any pending tag additions are complete
+  await new Promise(r => setTimeout(r, 10));
+
+  const industries = [...selectedIndustries];
+  const locations = [...selectedLocations];
 
   if (!industries.length || !locations.length) {
     alert('Please add at least one industry and one location.');
