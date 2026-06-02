@@ -525,7 +525,10 @@
       <input type="checkbox" id="select-all" onchange="toggleSelectAll(this)" style="width:16px; height:16px; cursor:pointer; accent-color:var(--accent);">
       <label for="select-all" style="font-size:13px; color:var(--muted); cursor:pointer;">Select all</label>
       <span id="selected-count" style="font-size:13px; color:var(--text);">0 selected</span>
-      <button class="btn btn-accent btn-sm" onclick="exportCSV()" style="margin-left:auto;">
+      <button class="btn btn-accent btn-sm" onclick="addSelectedToPipeline()" style="margin-left:auto;">
+        + Add to Pipeline
+      </button>
+      <button class="btn btn-accent btn-sm" onclick="exportCSV()" style="background:var(--bg3); color:var(--text);">
         ↓ Export CSV
       </button>
       <button class="btn btn-sm" onclick="clearSelection()">Clear</button>
@@ -997,6 +1000,26 @@ async function saveLead(i) {
   localStorage.setItem('leadminer-pipeline', JSON.stringify(pipeline));
   updatePipelineCount();
   renderLeads(document.getElementById('leads-container'));
+}
+
+async function addSelectedToPipeline() {
+  const checkboxes = document.querySelectorAll('.lead-cb:checked');
+  if (!checkboxes.length) { alert('Select at least one lead first.'); return; }
+  let added = 0;
+  checkboxes.forEach(cb => {
+    const i = parseInt(cb.dataset.idx);
+    const l = leads[i];
+    if (l && !pipeline.find(p => p.place_id === l.place_id)) {
+      pipeline.push({ ...l, status: 'new', added: new Date().toISOString() });
+      added++;
+    }
+  });
+  localStorage.setItem('leadminer-pipeline', JSON.stringify(pipeline));
+  updatePipelineCount();
+  renderLeads(document.getElementById('leads-container'));
+  clearSelection();
+  if (added > 0) alert(added + ' lead' + (added > 1 ? 's' : '') + ' added to pipeline!');
+  else alert('All selected leads are already in your pipeline.');
 }
 
 function updatePipelineCount() {
