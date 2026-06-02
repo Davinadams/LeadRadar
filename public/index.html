@@ -307,8 +307,12 @@
         </datalist>
         </div>
         <div class="field" style="flex:1.5;">
-          <label>Location</label>
-          <input type="text" id="q-location" list="location-list" placeholder="Select city or ZIP...">
+          <label>Location <span style="color:var(--muted2); font-size:10px; font-weight:400;">select multiple</span></label>
+          <div id="location-tags" style="min-height:38px; border:1px solid var(--border); border-radius:var(--radius-sm); background:var(--bg3); padding:4px 8px; display:flex; flex-wrap:wrap; gap:4px; align-items:center; cursor:text;" onclick="document.getElementById('q-location').focus()">
+            <input type="text" id="q-location" list="location-list" placeholder="Add city..." autocomplete="off"
+              style="border:none; background:transparent; color:var(--text); font-size:14px; outline:none; flex:1; min-width:120px; height:28px;"
+              onkeydown="handleLocationKey(event)">
+          </div>
         <datalist id="location-list">
           <!-- Utah -->
           <option value="Salt Lake City, UT"><option value="West Valley City, UT"><option value="Provo, UT">
@@ -374,6 +378,70 @@
           <option value="Crested Butte, CO"><option value="Pagosa Springs, CO"><option value="Cortez, CO">
           <option value="Fort Morgan, CO"><option value="Sterling, CO"><option value="Yuma, CO">
           <option value="Akron, CO"><option value="Wray, CO"><option value="Burlington, CO">
+          <!-- California -->
+          <option value="Los Angeles, CA"><option value="San Diego, CA"><option value="San Jose, CA">
+          <option value="San Francisco, CA"><option value="Fresno, CA"><option value="Sacramento, CA">
+          <option value="Long Beach, CA"><option value="Oakland, CA"><option value="Bakersfield, CA">
+          <option value="Anaheim, CA"><option value="Santa Ana, CA"><option value="Riverside, CA">
+          <option value="Stockton, CA"><option value="Irvine, CA"><option value="Chula Vista, CA">
+          <option value="Fremont, CA"><option value="San Bernardino, CA"><option value="Modesto, CA">
+          <option value="Fontana, CA"><option value="Moreno Valley, CA"><option value="Glendale, CA">
+          <option value="Huntington Beach, CA"><option value="Santa Clarita, CA"><option value="Garden Grove, CA">
+          <option value="Oceanside, CA"><option value="Rancho Cucamonga, CA"><option value="Santa Rosa, CA">
+          <option value="Ontario, CA"><option value="Lancaster, CA"><option value="Elk Grove, CA">
+          <option value="Palmdale, CA"><option value="Salinas, CA"><option value="Sunnyvale, CA">
+          <option value="Pomona, CA"><option value="Escondido, CA"><option value="Torrance, CA">
+          <option value="Pasadena, CA"><option value="Hayward, CA"><option value="Fullerton, CA">
+          <option value="Orange, CA"><option value="Roseville, CA"><option value="Visalia, CA">
+          <option value="Concord, CA"><option value="Victorville, CA"><option value="Simi Valley, CA">
+          <option value="Santa Clara, CA"><option value="Vallejo, CA"><option value="Berkeley, CA">
+          <option value="El Monte, CA"><option value="Downey, CA"><option value="Costa Mesa, CA">
+          <option value="Inglewood, CA"><option value="West Covina, CA"><option value="Norwalk, CA">
+          <option value="Burbank, CA"><option value="Antioch, CA"><option value="Richmond, CA">
+          <option value="Temecula, CA"><option value="Murrieta, CA"><option value="Thousand Oaks, CA">
+          <option value="Ventura, CA"><option value="Santa Barbara, CA"><option value="San Buenaventura, CA">
+          <option value="Oxnard, CA"><option value="Chico, CA"><option value="Redding, CA">
+          <option value="Santa Maria, CA"><option value="El Cajon, CA"><option value="Rialto, CA">
+          <option value="Daly City, CA"><option value="San Mateo, CA"><option value="Compton, CA">
+          <option value="Clovis, CA"><option value="Jurupa Valley, CA"><option value="South Gate, CA">
+          <option value="Vista, CA"><option value="Carson, CA"><option value="Santa Monica, CA">
+          <option value="Hesperia, CA"><option value="Westminster, CA"><option value="Redondo Beach, CA">
+          <option value="Hawthorne, CA"><option value="Whittier, CA"><option value="Newport Beach, CA">
+          <option value="Alhambra, CA"><option value="San Leandro, CA"><option value="Menifee, CA">
+          <option value="Lakewood, CA"><option value="Indio, CA"><option value="Palm Springs, CA">
+          <option value="Palm Desert, CA"><option value="Cathedral City, CA"><option value="Coachella, CA">
+          <option value="Napa, CA"><option value="Petaluma, CA"><option value="Fairfield, CA">
+          <option value="Vacaville, CA"><option value="San Ramon, CA"><option value="Pleasanton, CA">
+          <option value="Livermore, CA"><option value="Folsom, CA"><option value="Citrus Heights, CA">
+          <option value="Manteca, CA"><option value="Turlock, CA"><option value="Merced, CA">
+          <option value="Yuba City, CA"><option value="Redlands, CA"><option value="Yucaipa, CA">
+          <option value="Lake Forest, CA"><option value="Mission Viejo, CA"><option value="San Clemente, CA">
+          <!-- Nevada -->
+          <option value="Las Vegas, NV"><option value="Henderson, NV"><option value="Reno, NV">
+          <option value="North Las Vegas, NV"><option value="Sparks, NV"><option value="Carson City, NV">
+          <option value="Fernley, NV"><option value="Elko, NV"><option value="Mesquite, NV">
+          <option value="Boulder City, NV"><option value="Fallon, NV"><option value="Winnemucca, NV">
+          <option value="West Wendover, NV"><option value="Ely, NV"><option value="Yerington, NV">
+          <option value="Laughlin, NV"><option value="Pahrump, NV"><option value="Summerlin, NV">
+          <option value="Enterprise, NV"><option value="Spring Valley, NV"><option value="Sunrise Manor, NV">
+          <option value="Whitney, NV"><option value="Winchester, NV"><option value="Paradise, NV">
+          <option value="Sun Valley, NV"><option value="Gardnerville, NV"><option value="Minden, NV">
+          <option value="Incline Village, NV"><option value="Dayton, NV"><option value="Battle Mountain, NV">
+          <!-- Idaho -->
+          <option value="Boise, ID"><option value="Nampa, ID"><option value="Meridian, ID">
+          <option value="Idaho Falls, ID"><option value="Pocatello, ID"><option value="Caldwell, ID">
+          <option value="Coeur d'Alene, ID"><option value="Twin Falls, ID"><option value="Lewiston, ID">
+          <option value="Moscow, ID"><option value="Rexburg, ID"><option value="Eagle, ID">
+          <option value="Kuna, ID"><option value="Post Falls, ID"><option value="Sandpoint, ID">
+          <option value="Ammon, ID"><option value="Garden City, ID"><option value="Star, ID">
+          <option value="Middleton, ID"><option value="Chubbuck, ID"><option value="Burley, ID">
+          <option value="Hailey, ID"><option value="Mountain Home, ID"><option value="Jerome, ID">
+          <option value="Blackfoot, ID"><option value="Hayden, ID"><option value="Rathdrum, ID">
+          <option value="Rupert, ID"><option value="Payette, ID"><option value="Weiser, ID">
+          <option value="McCall, ID"><option value="Emmett, ID"><option value="Shelley, ID">
+          <option value="American Falls, ID"><option value="Gooding, ID"><option value="Grangeville, ID">
+          <option value="St. Anthony, ID"><option value="Preston, ID"><option value="Soda Springs, ID">
+          <option value="Driggs, ID"><option value="Victor, ID"><option value="Salmon, ID">
         </datalist>
         </div>
         <div class="field" style="flex:1; min-width:130px;">
@@ -581,23 +649,29 @@ function showPage(name, el) {
 // ─── Lead search ───────────────────────────────────────────────────────────
 async function searchLeads() {
   // Accept typed value as an industry if user hasn't pressed Enter
-  const typedVal = document.getElementById('q-industry').value.trim();
-  if (typedVal && !selectedIndustries.includes(typedVal)) addIndustryTag(typedVal);
+  const typedIndustry = document.getElementById('q-industry').value.trim();
+  if (typedIndustry && !selectedIndustries.includes(typedIndustry)) addIndustryTag(typedIndustry);
   document.getElementById('q-industry').value = '';
 
+  const typedLocation = document.getElementById('q-location').value.trim();
+  if (typedLocation && !selectedLocations.includes(typedLocation)) addLocationTag(typedLocation);
+  document.getElementById('q-location').value = '';
+
   const industries = selectedIndustries.length ? selectedIndustries : [];
-  const location = document.getElementById('q-location').value.trim();
-  if (!industries.length || !location) {
-    alert('Please add at least one industry and a location.');
+  const locations = selectedLocations.length ? selectedLocations : [];
+  if (!industries.length || !locations.length) {
+    alert('Please add at least one industry and one location.');
     return;
   }
 
   const container = document.getElementById('leads-container');
-  container.innerHTML = `<div class="loading"><span class="spinner"></span> Scanning ${location} for ${industries.join(', ')}…</div>`;
+  container.innerHTML = `<div class="loading"><span class="spinner"></span> Scanning ${locations.join(', ')} for ${industries.join(', ')}…</div>`;
 
   try {
-    // Search all industries in parallel and merge results
-    const allResults = await Promise.all(industries.map(async industry => {
+    // Search all industry+location combos in parallel and merge results
+    const combos = [];
+    industries.forEach(industry => locations.forEach(location => combos.push({ industry, location })));
+    const allResults = await Promise.all(combos.map(async ({ industry, location }) => {
       const params = new URLSearchParams({ industry, location });
       const r = await fetch(API + '/api/leads?' + params);
       const d = await r.json();
@@ -610,7 +684,6 @@ async function searchLeads() {
     allResults.flat().forEach(l => {
       if (!seen.has(l.place_id)) { seen.add(l.place_id); merged.push(l); }
     });
-    // Re-sort by score
     merged.sort((a, b) => (b.score || 0) - (a.score || 0));
 
     leads = merged;
@@ -621,8 +694,7 @@ async function searchLeads() {
 
     applyFilters();
     document.getElementById('bulk-toolbar').style.display = 'flex';
-    // Run AI scoring in background
-    runAIScoring(industries.join(', '), location);
+    runAIScoring(industries.join(', '), locations.join(', '));
 
   } catch(e) {
     container.innerHTML = `<div class="empty"><p style="color:var(--danger)">Could not reach server. Is it running?</p></div>`;
@@ -1335,6 +1407,13 @@ document.addEventListener('DOMContentLoaded', () => {
       if (val) { addIndustryTag(val); input.value = ''; }
     });
   }
+  const locInput = document.getElementById('q-location');
+  if (locInput) {
+    locInput.addEventListener('change', () => {
+      const val = locInput.value.trim();
+      if (val) { addLocationTag(val); locInput.value = ''; }
+    });
+  }
 });
 
 function addIndustryTag(val) {
@@ -1351,9 +1430,7 @@ function removeIndustryTag(i) {
 function renderIndustryTags() {
   const container = document.getElementById('industry-tags');
   const input = document.getElementById('q-industry');
-  // Remove old tags
   container.querySelectorAll('.industry-tag').forEach(t => t.remove());
-  // Add tags before input
   selectedIndustries.forEach((ind, i) => {
     const tag = document.createElement('span');
     tag.className = 'industry-tag';
@@ -1361,8 +1438,47 @@ function renderIndustryTags() {
     tag.innerHTML = esc(ind) + '<span onclick="removeIndustryTag(' + i + ')" style="cursor:pointer; font-size:14px; line-height:1;">×</span>';
     container.insertBefore(tag, input);
   });
-  // Update placeholder
   input.placeholder = selectedIndustries.length ? 'Add more...' : 'Add industry...';
+}
+
+// ─── Multi-location selection ─────────────────────────────────────────────────
+let selectedLocations = [];
+
+function handleLocationKey(e) {
+  const input = document.getElementById('q-location');
+  const val = input.value.trim();
+  if ((e.key === 'Enter' || e.key === ',') && val) {
+    e.preventDefault();
+    addLocationTag(val);
+    input.value = '';
+  } else if (e.key === 'Backspace' && !val && selectedLocations.length) {
+    removeLocationTag(selectedLocations.length - 1);
+  }
+}
+
+function addLocationTag(val) {
+  if (!val || selectedLocations.includes(val)) return;
+  selectedLocations.push(val);
+  renderLocationTags();
+}
+
+function removeLocationTag(i) {
+  selectedLocations.splice(i, 1);
+  renderLocationTags();
+}
+
+function renderLocationTags() {
+  const container = document.getElementById('location-tags');
+  const input = document.getElementById('q-location');
+  container.querySelectorAll('.location-tag').forEach(t => t.remove());
+  selectedLocations.forEach((loc, i) => {
+    const tag = document.createElement('span');
+    tag.className = 'location-tag';
+    tag.style.cssText = 'background:var(--info); color:#fff; font-size:12px; padding:2px 8px; border-radius:20px; display:flex; align-items:center; gap:4px; white-space:nowrap; font-weight:500;';
+    tag.innerHTML = esc(loc) + '<span onclick="removeLocationTag(' + i + ')" style="cursor:pointer; font-size:14px; line-height:1;">×</span>';
+    container.insertBefore(tag, input);
+  });
+  input.placeholder = selectedLocations.length ? 'Add more...' : 'Add city...';
 }
 
 // ─── Multi-rank filter ────────────────────────────────────────────────────────
