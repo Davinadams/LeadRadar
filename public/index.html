@@ -1018,8 +1018,6 @@ async function addSelectedToPipeline() {
   updatePipelineCount();
   renderLeads(document.getElementById('leads-container'));
   clearSelection();
-  if (added > 0) alert(added + ' lead' + (added > 1 ? 's' : '') + ' added to pipeline!');
-  else alert('All selected leads are already in your pipeline.');
 }
 
 function updatePipelineCount() {
