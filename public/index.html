@@ -835,7 +835,7 @@ function renderLeads(container) {
       <div class="lead-footer">
         <button class="btn btn-sm" onclick="event.stopPropagation(); saveLead(${i})">+ Pipeline</button>
         <button class="btn btn-sm" onclick="event.stopPropagation(); openOutreach(${i})">Write outreach</button>
-
+        ${l.phone ? `<a class="btn btn-sm" style="background:var(--accent);color:#000;font-weight:600;text-decoration:none;" href="tel:${l.phone.replace(/\D/g,'')}" onclick="event.stopPropagation()">📞 Call</a>` : ''}
         ${l.phone ? `<span class="lead-phone">${esc(l.phone)}</span>` : ''}
       </div>
       <div id="detail-${i}" style="display:none;"></div>
@@ -1087,7 +1087,7 @@ async function loadPipeline() {
             try { await fetch(API + '/api/pipeline', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(l) }); } catch {}
           }
           pipeline = local;
-          localStorage.removeItem('leadminer-pipeline');
+          // localStorage.removeItem('leadminer-pipeline');
           console.log('Migration complete');
         }
       }
@@ -1104,6 +1104,7 @@ async function saveLead(i) {
   const l = leads[i];
   if (pipeline.find(p => p.place_id === l.place_id)) return;
   pipeline.push({ ...l, status: 'new', added: new Date().toISOString() });
+  localStorage.setItem('leadminer-pipeline', JSON.stringify(pipeline));
   updatePipelineCount();
   renderLeads(document.getElementById('leads-container'));
   try { await fetch(API + '/api/pipeline', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(l) }); } catch {}
