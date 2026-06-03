@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LeadRadar — Find businesses without websites</title>
+<title>Lead Radar — Find businesses without websites</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='14' fill='%230e0e10'/><circle cx='32' cy='32' r='28' fill='none' stroke='%2300d97e' stroke-width='2' opacity='0.3'/><circle cx='32' cy='32' r='19' fill='none' stroke='%2300d97e' stroke-width='2' opacity='0.5'/><circle cx='32' cy='32' r='10' fill='none' stroke='%2300d97e' stroke-width='2' opacity='0.7'/><circle cx='32' cy='32' r='3' fill='%2300d97e'/><line x1='32' y1='32' x2='50' y2='14' stroke='%2300d97e' stroke-width='2.5' stroke-linecap='round' opacity='0.9'/><circle cx='50' cy='14' r='3' fill='%2300d97e'/></svg>">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="LeadRadar">
+<meta name="apple-mobile-web-app-title" content="Lead Radar">
 <style>
   :root {
     --bg: #0e0e10;
@@ -187,28 +187,94 @@
     .stats { grid-template-columns: repeat(2, 1fr); }
     .outreach-layout { grid-template-columns: 1fr; }
     .detail-grid { grid-template-columns: 1fr; }
+    .hamburger { display: flex; }
+    .mobile-topbar { display: flex; }
+  }
+  .hamburger {
+    display: none;
+    position: fixed;
+    top: 14px;
+    left: 14px;
+    z-index: 300;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px;
+    cursor: pointer;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .hamburger span {
+    display: block;
+    width: 20px;
+    height: 2px;
+    background: var(--text);
+    border-radius: 2px;
+    transition: all 0.2s;
+  }
+  .mobile-topbar {
+    display: none;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px 0;
+    margin-bottom: 8px;
+  }
+  .mobile-logo {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--accent);
+    letter-spacing: -0.3px;
+  }
+  .sidebar-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    z-index: 200;
+  }
+  .sidebar-overlay.open { display: block; }
+  .sidebar.mobile-open {
+    display: flex !important;
+    position: fixed;
+    left: 0;
+    top: 0;
+    height: 100vh;
+    z-index: 250;
+    animation: slideIn 0.2s ease;
+  }
+  @keyframes slideIn {
+    from { transform: translateX(-100%); }
+    to { transform: translateX(0); }
   }
 </style>
 </head>
 <body>
 
-<nav class="sidebar">
+<!-- Mobile hamburger -->
+<button class="hamburger" onclick="toggleMobileNav()" id="hamburger">
+  <span></span><span></span><span></span>
+</button>
+
+<!-- Mobile sidebar overlay -->
+<div class="sidebar-overlay" id="sidebar-overlay" onclick="closeMobileNav()"></div>
+
+<nav class="sidebar" id="sidebar">
   <div class="logo">
     <span class="logo-dot"></span>
-    LeadRadar
+    Lead Radar
   </div>
   <div class="nav-section">Search</div>
-  <div class="nav-item active" onclick="showPage('leads', this)">
+  <div class="nav-item active" onclick="showPage('leads', this); closeMobileNav()">
     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35" stroke-linecap="round"/></svg>
     Find Leads
   </div>
   <div class="nav-section">Manage</div>
-  <div class="nav-item" onclick="showPage('pipeline', this)">
+  <div class="nav-item" onclick="showPage('pipeline', this); closeMobileNav()">
     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4" stroke-linecap="round" stroke-linejoin="round"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" stroke-linecap="round"/></svg>
     Pipeline
     <span id="pipeline-count" style="margin-left:auto; font-size:11px; background:var(--bg3); padding:1px 7px; border-radius:20px; color:var(--muted);"></span>
   </div>
-  <div class="nav-item" onclick="showPage('outreach', this)">
+  <div class="nav-item" onclick="showPage('outreach', this); closeMobileNav()">
     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" stroke-linecap="round" stroke-linejoin="round"/></svg>
     Outreach
   </div>
@@ -1426,6 +1492,20 @@ function exportCSV() {
   a.download = 'leadminer-export-' + new Date().toISOString().slice(0,10) + '.csv';
   a.click();
   URL.revokeObjectURL(url);
+}
+
+function toggleMobileNav() {
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('sidebar-overlay');
+  sidebar.classList.toggle('mobile-open');
+  overlay.classList.toggle('open');
+}
+
+function closeMobileNav() {
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('sidebar-overlay');
+  sidebar.classList.remove('mobile-open');
+  overlay.classList.remove('open');
 }
 
 // ─── Multi-industry selection ─────────────────────────────────────────────────
