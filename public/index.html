@@ -1122,10 +1122,10 @@ async function addSelectedToPipeline() {
       toAdd.push(l);
     }
   });
+  localStorage.setItem('leadminer-pipeline', JSON.stringify(pipeline));
   updatePipelineCount();
   renderLeads(document.getElementById('leads-container'));
   clearSelection();
-  // Save all to server
   for (const l of toAdd) {
     try { await fetch(API + '/api/pipeline', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(l) }); } catch {}
   }
@@ -1166,6 +1166,7 @@ function renderPipeline() {
       <td>
         <div style="font-weight:500;">${esc(l.name)}</div>
         <div class="notes-mini">${esc((l.address || '').split(',').slice(0,2).join(','))}</div>
+        ${l.phone ? `<div class="notes-mini" style="color:var(--muted);">${esc(l.phone)}</div>` : ''}
         ${(l.notes || []).length ? `<div class="notes-mini" style="color:var(--muted2);">${(l.notes||[]).length} note${(l.notes||[]).length>1?'s':''}</div>` : ''}
       </td>
       <td>${l.rating ? `★ ${l.rating}` : '—'}</td>
@@ -1181,7 +1182,8 @@ function renderPipeline() {
       </td>
       <td style="color:var(--muted); font-size:12px;">${new Date(l.added).toLocaleDateString()}</td>
       <td>
-        <div style="display:flex; gap:6px;">
+        <div style="display:flex; gap:6px; align-items:center;">
+          ${l.phone ? `<a class="btn btn-sm" style="background:var(--accent);color:#000;font-weight:600;text-decoration:none;" href="tel:${l.phone.replace(/\D/g,'')}">📞 Call</a>` : ''}
           <button class="btn btn-sm" onclick="openNotes('${esc(l.place_id)}')">Notes</button>
           <button class="btn btn-sm btn-danger" onclick="removePipeline('${esc(l.place_id)}')">✕</button>
         </div>
