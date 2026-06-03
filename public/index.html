@@ -136,6 +136,12 @@
   .pipeline-table td { padding: 12px; border-bottom: 1px solid var(--border); font-size: 13px; vertical-align: middle; }
   .pipeline-table tr:last-child td { border-bottom: none; }
   .pipeline-table tr:hover td { background: rgba(255,255,255,0.02); }
+  @media (max-width: 900px) {
+    .pipeline-table thead { display: none; }
+    .pipeline-table tr { display: flex; flex-direction: column; padding: 14px; border-bottom: 1px solid var(--border); }
+    .pipeline-table td { padding: 3px 0; border: none; }
+    .pipeline-table tr:last-child { border-bottom: none; }
+  }
   .status-sel { height: 28px; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--bg3); color: var(--text); padding: 0 8px; font-size: 12px; outline: none; cursor: pointer; }
   .status-new { color: var(--info); }
   .status-contacted { color: var(--warn); }
