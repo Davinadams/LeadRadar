@@ -181,15 +181,6 @@
   .note-ts { font-size: 11px; color: var(--muted); margin-top: 3px; }
 
   /* Responsive */
-  @media (max-width: 900px) {
-    .sidebar { display: none; }
-    .main { margin-left: 0; padding: 20px 16px; }
-    .stats { grid-template-columns: repeat(2, 1fr); }
-    .outreach-layout { grid-template-columns: 1fr; }
-    .detail-grid { grid-template-columns: 1fr; }
-    .hamburger { display: flex; }
-    .mobile-topbar { display: flex; }
-  }
   .hamburger {
     display: none;
     position: fixed;
@@ -245,6 +236,15 @@
   @keyframes slideIn {
     from { transform: translateX(-100%); }
     to { transform: translateX(0); }
+  }
+  @media (max-width: 900px) {
+    .sidebar { display: none; }
+    .main { margin-left: 0; padding: 56px 16px 20px; }
+    .stats { grid-template-columns: repeat(2, 1fr); }
+    .outreach-layout { grid-template-columns: 1fr; }
+    .detail-grid { grid-template-columns: 1fr; }
+    .hamburger { display: flex; }
+    .mobile-topbar { display: flex; }
   }
 </style>
 </head>
