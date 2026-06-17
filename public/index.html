@@ -3,12 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Lead Radar — Find businesses without websites</title>
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='14' fill='%230e0e10'/><circle cx='32' cy='32' r='28' fill='none' stroke='%2300d97e' stroke-width='2' opacity='0.3'/><circle cx='32' cy='32' r='19' fill='none' stroke='%2300d97e' stroke-width='2' opacity='0.5'/><circle cx='32' cy='32' r='10' fill='none' stroke='%2300d97e' stroke-width='2' opacity='0.7'/><circle cx='32' cy='32' r='3' fill='%2300d97e'/><line x1='32' y1='32' x2='50' y2='14' stroke='%2300d97e' stroke-width='2.5' stroke-linecap='round' opacity='0.9'/><circle cx='50' cy='14' r='3' fill='%2300d97e'/></svg>">
-<link rel="apple-touch-icon" href="/apple-touch-icon.png">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Lead Radar">
+<title>LeadRadar — Find businesses without websites</title>
 <style>
   :root {
     --bg: #0e0e10;
@@ -136,12 +131,6 @@
   .pipeline-table td { padding: 12px; border-bottom: 1px solid var(--border); font-size: 13px; vertical-align: middle; }
   .pipeline-table tr:last-child td { border-bottom: none; }
   .pipeline-table tr:hover td { background: rgba(255,255,255,0.02); }
-  @media (max-width: 900px) {
-    .pipeline-table thead { display: none; }
-    .pipeline-table tr { display: flex; flex-direction: column; padding: 14px; border-bottom: 1px solid var(--border); }
-    .pipeline-table td { padding: 3px 0; border: none; }
-    .pipeline-table tr:last-child { border-bottom: none; }
-  }
   .status-sel { height: 28px; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--bg3); color: var(--text); padding: 0 8px; font-size: 12px; outline: none; cursor: pointer; }
   .status-new { color: var(--info); }
   .status-contacted { color: var(--warn); }
@@ -187,100 +176,34 @@
   .note-ts { font-size: 11px; color: var(--muted); margin-top: 3px; }
 
   /* Responsive */
-  .hamburger {
-    display: none;
-    position: fixed;
-    top: 14px;
-    left: 14px;
-    z-index: 300;
-    background: var(--bg2);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 8px;
-    cursor: pointer;
-    flex-direction: column;
-    gap: 4px;
-  }
-  .hamburger span {
-    display: block;
-    width: 20px;
-    height: 2px;
-    background: var(--text);
-    border-radius: 2px;
-    transition: all 0.2s;
-  }
-  .mobile-topbar {
-    display: none;
-    align-items: center;
-    gap: 10px;
-    padding: 12px 16px 0;
-    margin-bottom: 8px;
-  }
-  .mobile-logo {
-    font-size: 16px;
-    font-weight: 700;
-    color: var(--accent);
-    letter-spacing: -0.3px;
-  }
-  .sidebar-overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.6);
-    z-index: 200;
-  }
-  .sidebar-overlay.open { display: block; }
-  .sidebar.mobile-open {
-    display: flex !important;
-    position: fixed;
-    left: 0;
-    top: 0;
-    height: 100vh;
-    z-index: 250;
-    animation: slideIn 0.2s ease;
-  }
-  @keyframes slideIn {
-    from { transform: translateX(-100%); }
-    to { transform: translateX(0); }
-  }
   @media (max-width: 900px) {
     .sidebar { display: none; }
-    .main { margin-left: 0; padding: 56px 16px 20px; }
+    .main { margin-left: 0; padding: 20px 16px; }
     .stats { grid-template-columns: repeat(2, 1fr); }
     .outreach-layout { grid-template-columns: 1fr; }
     .detail-grid { grid-template-columns: 1fr; }
-    .hamburger { display: flex; }
-    .mobile-topbar { display: flex; }
   }
 </style>
 </head>
 <body>
 
-<!-- Mobile hamburger -->
-<button class="hamburger" onclick="toggleMobileNav()" id="hamburger">
-  <span></span><span></span><span></span>
-</button>
-
-<!-- Mobile sidebar overlay -->
-<div class="sidebar-overlay" id="sidebar-overlay" onclick="closeMobileNav()"></div>
-
-<nav class="sidebar" id="sidebar">
+<nav class="sidebar">
   <div class="logo">
     <span class="logo-dot"></span>
-    Lead Radar
+    LeadRadar
   </div>
   <div class="nav-section">Search</div>
-  <div class="nav-item active" onclick="showPage('leads', this); closeMobileNav()">
+  <div class="nav-item active" onclick="showPage('leads', this)">
     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35" stroke-linecap="round"/></svg>
     Find Leads
   </div>
   <div class="nav-section">Manage</div>
-  <div class="nav-item" onclick="showPage('pipeline', this); closeMobileNav()">
+  <div class="nav-item" onclick="showPage('pipeline', this)">
     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4" stroke-linecap="round" stroke-linejoin="round"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" stroke-linecap="round"/></svg>
     Pipeline
     <span id="pipeline-count" style="margin-left:auto; font-size:11px; background:var(--bg3); padding:1px 7px; border-radius:20px; color:var(--muted);"></span>
   </div>
-  <div class="nav-item" onclick="showPage('outreach', this); closeMobileNav()">
+  <div class="nav-item" onclick="showPage('outreach', this)">
     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" stroke-linecap="round" stroke-linejoin="round"/></svg>
     Outreach
   </div>
@@ -317,10 +240,7 @@
     <div class="search-panel">
       <div class="search-row">
         <div class="field" style="flex:2;">
-          <label style="display:flex;align-items:center;justify-content:space-between;">
-            <span>Industry <span style="color:var(--muted2); font-size:10px; font-weight:400;">select multiple</span></span>
-            <span onclick="selectAllIndustries()" style="font-size:11px;color:var(--accent);cursor:pointer;font-weight:500;">Select all</span>
-          </label>
+          <label>Industry <span style="color:var(--muted2); font-size:10px; font-weight:400;">select multiple</span></label>
           <div id="industry-tags" style="min-height:38px; border:1px solid var(--border); border-radius:var(--radius-sm); background:var(--bg3); padding:4px 8px; display:flex; flex-wrap:wrap; gap:4px; align-items:center; cursor:text;" onclick="document.getElementById('q-industry').focus()">
             <input type="text" id="q-industry" list="industry-list" placeholder="Add industry..." autocomplete="off"
               style="border:none; background:transparent; color:var(--text); font-size:14px; outline:none; flex:1; min-width:120px; height:28px;"
@@ -387,12 +307,8 @@
         </datalist>
         </div>
         <div class="field" style="flex:1.5;">
-          <label>Location <span style="color:var(--muted2); font-size:10px; font-weight:400;">select multiple</span></label>
-          <div id="location-tags" style="min-height:38px; border:1px solid var(--border); border-radius:var(--radius-sm); background:var(--bg3); padding:4px 8px; display:flex; flex-wrap:wrap; gap:4px; align-items:center; cursor:text;" onclick="document.getElementById('q-location').focus()">
-            <input type="text" id="q-location" list="location-list" placeholder="Add city..." autocomplete="off"
-              style="border:none; background:transparent; color:var(--text); font-size:14px; outline:none; flex:1; min-width:120px; height:28px;"
-              onkeydown="handleLocationKey(event)">
-          </div>
+          <label>Location</label>
+          <input type="text" id="q-location" list="location-list" placeholder="Select city or ZIP...">
         <datalist id="location-list">
           <!-- Utah -->
           <option value="Salt Lake City, UT"><option value="West Valley City, UT"><option value="Provo, UT">
@@ -458,70 +374,6 @@
           <option value="Crested Butte, CO"><option value="Pagosa Springs, CO"><option value="Cortez, CO">
           <option value="Fort Morgan, CO"><option value="Sterling, CO"><option value="Yuma, CO">
           <option value="Akron, CO"><option value="Wray, CO"><option value="Burlington, CO">
-          <!-- California -->
-          <option value="Los Angeles, CA"><option value="San Diego, CA"><option value="San Jose, CA">
-          <option value="San Francisco, CA"><option value="Fresno, CA"><option value="Sacramento, CA">
-          <option value="Long Beach, CA"><option value="Oakland, CA"><option value="Bakersfield, CA">
-          <option value="Anaheim, CA"><option value="Santa Ana, CA"><option value="Riverside, CA">
-          <option value="Stockton, CA"><option value="Irvine, CA"><option value="Chula Vista, CA">
-          <option value="Fremont, CA"><option value="San Bernardino, CA"><option value="Modesto, CA">
-          <option value="Fontana, CA"><option value="Moreno Valley, CA"><option value="Glendale, CA">
-          <option value="Huntington Beach, CA"><option value="Santa Clarita, CA"><option value="Garden Grove, CA">
-          <option value="Oceanside, CA"><option value="Rancho Cucamonga, CA"><option value="Santa Rosa, CA">
-          <option value="Ontario, CA"><option value="Lancaster, CA"><option value="Elk Grove, CA">
-          <option value="Palmdale, CA"><option value="Salinas, CA"><option value="Sunnyvale, CA">
-          <option value="Pomona, CA"><option value="Escondido, CA"><option value="Torrance, CA">
-          <option value="Pasadena, CA"><option value="Hayward, CA"><option value="Fullerton, CA">
-          <option value="Orange, CA"><option value="Roseville, CA"><option value="Visalia, CA">
-          <option value="Concord, CA"><option value="Victorville, CA"><option value="Simi Valley, CA">
-          <option value="Santa Clara, CA"><option value="Vallejo, CA"><option value="Berkeley, CA">
-          <option value="El Monte, CA"><option value="Downey, CA"><option value="Costa Mesa, CA">
-          <option value="Inglewood, CA"><option value="West Covina, CA"><option value="Norwalk, CA">
-          <option value="Burbank, CA"><option value="Antioch, CA"><option value="Richmond, CA">
-          <option value="Temecula, CA"><option value="Murrieta, CA"><option value="Thousand Oaks, CA">
-          <option value="Ventura, CA"><option value="Santa Barbara, CA"><option value="San Buenaventura, CA">
-          <option value="Oxnard, CA"><option value="Chico, CA"><option value="Redding, CA">
-          <option value="Santa Maria, CA"><option value="El Cajon, CA"><option value="Rialto, CA">
-          <option value="Daly City, CA"><option value="San Mateo, CA"><option value="Compton, CA">
-          <option value="Clovis, CA"><option value="Jurupa Valley, CA"><option value="South Gate, CA">
-          <option value="Vista, CA"><option value="Carson, CA"><option value="Santa Monica, CA">
-          <option value="Hesperia, CA"><option value="Westminster, CA"><option value="Redondo Beach, CA">
-          <option value="Hawthorne, CA"><option value="Whittier, CA"><option value="Newport Beach, CA">
-          <option value="Alhambra, CA"><option value="San Leandro, CA"><option value="Menifee, CA">
-          <option value="Lakewood, CA"><option value="Indio, CA"><option value="Palm Springs, CA">
-          <option value="Palm Desert, CA"><option value="Cathedral City, CA"><option value="Coachella, CA">
-          <option value="Napa, CA"><option value="Petaluma, CA"><option value="Fairfield, CA">
-          <option value="Vacaville, CA"><option value="San Ramon, CA"><option value="Pleasanton, CA">
-          <option value="Livermore, CA"><option value="Folsom, CA"><option value="Citrus Heights, CA">
-          <option value="Manteca, CA"><option value="Turlock, CA"><option value="Merced, CA">
-          <option value="Yuba City, CA"><option value="Redlands, CA"><option value="Yucaipa, CA">
-          <option value="Lake Forest, CA"><option value="Mission Viejo, CA"><option value="San Clemente, CA">
-          <!-- Nevada -->
-          <option value="Las Vegas, NV"><option value="Henderson, NV"><option value="Reno, NV">
-          <option value="North Las Vegas, NV"><option value="Sparks, NV"><option value="Carson City, NV">
-          <option value="Fernley, NV"><option value="Elko, NV"><option value="Mesquite, NV">
-          <option value="Boulder City, NV"><option value="Fallon, NV"><option value="Winnemucca, NV">
-          <option value="West Wendover, NV"><option value="Ely, NV"><option value="Yerington, NV">
-          <option value="Laughlin, NV"><option value="Pahrump, NV"><option value="Summerlin, NV">
-          <option value="Enterprise, NV"><option value="Spring Valley, NV"><option value="Sunrise Manor, NV">
-          <option value="Whitney, NV"><option value="Winchester, NV"><option value="Paradise, NV">
-          <option value="Sun Valley, NV"><option value="Gardnerville, NV"><option value="Minden, NV">
-          <option value="Incline Village, NV"><option value="Dayton, NV"><option value="Battle Mountain, NV">
-          <!-- Idaho -->
-          <option value="Boise, ID"><option value="Nampa, ID"><option value="Meridian, ID">
-          <option value="Idaho Falls, ID"><option value="Pocatello, ID"><option value="Caldwell, ID">
-          <option value="Coeur d'Alene, ID"><option value="Twin Falls, ID"><option value="Lewiston, ID">
-          <option value="Moscow, ID"><option value="Rexburg, ID"><option value="Eagle, ID">
-          <option value="Kuna, ID"><option value="Post Falls, ID"><option value="Sandpoint, ID">
-          <option value="Ammon, ID"><option value="Garden City, ID"><option value="Star, ID">
-          <option value="Middleton, ID"><option value="Chubbuck, ID"><option value="Burley, ID">
-          <option value="Hailey, ID"><option value="Mountain Home, ID"><option value="Jerome, ID">
-          <option value="Blackfoot, ID"><option value="Hayden, ID"><option value="Rathdrum, ID">
-          <option value="Rupert, ID"><option value="Payette, ID"><option value="Weiser, ID">
-          <option value="McCall, ID"><option value="Emmett, ID"><option value="Shelley, ID">
-          <option value="American Falls, ID"><option value="Gooding, ID"><option value="Grangeville, ID">
-          <option value="St. Anthony, ID"><option value="Preston, ID"><option value="Soda Springs, ID">
-          <option value="Driggs, ID"><option value="Victor, ID"><option value="Salmon, ID">
         </datalist>
         </div>
         <div class="field" style="flex:1; min-width:130px;">
@@ -554,17 +406,6 @@
             <option value="200to250">200 – 250</option>
             <option value="250to300">250 – 300</option>
             <option value="gt300">300+</option>
-          </select>
-        </div>
-        <div class="field" style="flex:1; min-width:130px;">
-          <label>Last Review</label>
-          <select id="f-last-review" onchange="applyFilters()">
-            <option value="all">Any time</option>
-            <option value="1mo">Within 1 month</option>
-            <option value="3mo">Within 3 months</option>
-            <option value="6mo">Within 6 months</option>
-            <option value="1yr">Within 1 year</option>
-            <option value="old">1+ years ago</option>
           </select>
         </div>
         <div class="field" style="flex:1; min-width:130px; position:relative;">
@@ -602,10 +443,7 @@
       <input type="checkbox" id="select-all" onchange="toggleSelectAll(this)" style="width:16px; height:16px; cursor:pointer; accent-color:var(--accent);">
       <label for="select-all" style="font-size:13px; color:var(--muted); cursor:pointer;">Select all</label>
       <span id="selected-count" style="font-size:13px; color:var(--text);">0 selected</span>
-      <button class="btn btn-accent btn-sm" onclick="addSelectedToPipeline()" style="margin-left:auto;">
-        + Add to Pipeline
-      </button>
-      <button class="btn btn-accent btn-sm" onclick="exportCSV()" style="background:var(--bg3); color:var(--text);">
+      <button class="btn btn-accent btn-sm" onclick="exportCSV()" style="margin-left:auto;">
         ↓ Export CSV
       </button>
       <button class="btn btn-sm" onclick="clearSelection()">Clear</button>
@@ -731,60 +569,39 @@ function showPage(name, el) {
 
 // ─── Lead search ───────────────────────────────────────────────────────────
 async function searchLeads() {
-  const typedIndustry = document.getElementById('q-industry').value.trim();
-  if (typedIndustry && !selectedIndustries.includes(typedIndustry)) addIndustryTag(typedIndustry);
+  // Accept typed value as an industry if user hasn't pressed Enter
+  const typedVal = document.getElementById('q-industry').value.trim();
+  if (typedVal && !selectedIndustries.includes(typedVal)) addIndustryTag(typedVal);
   document.getElementById('q-industry').value = '';
 
-  const typedLocation = document.getElementById('q-location').value.trim();
-  if (typedLocation && !selectedLocations.includes(typedLocation)) addLocationTag(typedLocation);
-  document.getElementById('q-location').value = '';
-
-  // Wait one tick to ensure any pending tag additions are complete
-  await new Promise(r => setTimeout(r, 10));
-
-  const industries = [...selectedIndustries];
-  const locations = [...selectedLocations];
-
-  if (!industries.length || !locations.length) {
-    alert('Please add at least one industry and one location.');
+  const industries = selectedIndustries.length ? selectedIndustries : [];
+  const location = document.getElementById('q-location').value.trim();
+  if (!industries.length || !location) {
+    alert('Please add at least one industry and a location.');
     return;
   }
 
   const container = document.getElementById('leads-container');
-  container.innerHTML = `<div class="loading"><span class="spinner"></span> Scanning ${locations.join(', ')} for ${industries.join(', ')}…</div>`;
+  container.innerHTML = `<div class="loading"><span class="spinner"></span> Scanning ${location} for ${industries.join(', ')}…</div>`;
 
   try {
-    const combos = [];
-    industries.forEach(industry => locations.forEach(location => combos.push({ industry, location })));
+    // Search all industries in parallel and merge results
+    const allResults = await Promise.all(industries.map(async industry => {
+      const params = new URLSearchParams({ industry, location });
+      const r = await fetch(API + '/api/leads?' + params);
+      const d = await r.json();
+      return d.leads || [];
+    }));
 
+    // Merge and deduplicate by place_id
     const seen = new Set();
     const merged = [];
-    const BATCH = 3;
-
-    for (let i = 0; i < combos.length; i += BATCH) {
-      const batch = combos.slice(i, i + BATCH);
-      const batchResults = await Promise.all(batch.map(async ({ industry, location }) => {
-        try {
-          const params = new URLSearchParams({ industry, location });
-          const controller = new AbortController();
-          const timer = setTimeout(() => controller.abort(), 15000);
-          const r = await fetch(API + '/api/leads?' + params, { signal: controller.signal });
-          clearTimeout(timer);
-          const d = await r.json();
-          return d.leads || [];
-        } catch { return []; }
-      }));
-      batchResults.flat().forEach(l => {
-        if (!seen.has(l.place_id)) { seen.add(l.place_id); merged.push(l); }
-      });
-      document.getElementById('s-found').textContent = merged.length;
-      document.getElementById('s-noweb').textContent = merged.filter(l => l.no_website).length;
-      document.getElementById('s-gems').textContent = merged.filter(l => l.is_hidden_gem).length;
-      container.innerHTML = `<div class="loading"><span class="spinner"></span> Found ${merged.length} leads so far… (${Math.min(i + BATCH, combos.length)} of ${combos.length} searches done)</div>`;
-      if (i + BATCH < combos.length) await new Promise(r => setTimeout(r, 300));
-    }
-
+    allResults.flat().forEach(l => {
+      if (!seen.has(l.place_id)) { seen.add(l.place_id); merged.push(l); }
+    });
+    // Re-sort by score
     merged.sort((a, b) => (b.score || 0) - (a.score || 0));
+
     leads = merged;
     allLeads = [...leads];
     document.getElementById('s-found').textContent = leads.length;
@@ -793,7 +610,8 @@ async function searchLeads() {
 
     applyFilters();
     document.getElementById('bulk-toolbar').style.display = 'flex';
-    runAIScoring(industries.join(', '), locations.join(', '));
+    // Run AI scoring in background
+    runAIScoring(industries.join(', '), location);
 
   } catch(e) {
     container.innerHTML = `<div class="empty"><p style="color:var(--danger)">Could not reach server. Is it running?</p></div>`;
@@ -836,12 +654,11 @@ function renderLeads(container) {
         ${l.search_rank ? `<span class="badge ${l.in_3pack ? 'b-rank-top' : l.search_rank <= 10 ? 'b-rank-mid' : 'b-rank-low'}">${l.in_3pack ? '★ ' : ''}#${l.search_rank} on Google Maps</span>` : ''}
 
         ${pipeline.find(p => p.place_id === l.place_id) ? `<span class="badge b-saved">✓ Saved</span>` : ''}
-        ${l.last_review_time ? (() => { const days = Math.round((Date.now()/1000 - l.last_review_time)/86400); const label = days < 30 ? days + 'd ago' : days < 365 ? Math.round(days/30) + 'mo ago' : Math.round(days/365) + 'yr ago'; const cls = days < 90 ? 'b-rank-top' : days < 365 ? 'b-rank-mid' : 'b-rank-low'; return `<span class="badge ${cls}" title="Last Google review">🕐 ${label}</span>`; })() : ''}
       </div>
       <div class="lead-footer">
         <button class="btn btn-sm" onclick="event.stopPropagation(); saveLead(${i})">+ Pipeline</button>
         <button class="btn btn-sm" onclick="event.stopPropagation(); openOutreach(${i})">Write outreach</button>
-        ${l.phone ? `<a class="btn btn-sm" style="background:var(--accent);color:#000;font-weight:600;text-decoration:none;" href="tel:${l.phone.replace(/\D/g,'')}" onclick="event.stopPropagation()">📞 Call</a>` : ''}
+
         ${l.phone ? `<span class="lead-phone">${esc(l.phone)}</span>` : ''}
       </div>
       <div id="detail-${i}" style="display:none;"></div>
@@ -889,20 +706,6 @@ function applyFilters() {
     if (reviews === '200to250'&& !(r >= 200 && r < 250)) return false;
     if (reviews === '250to300'&& !(r >= 250 && r < 300)) return false;
     if (reviews === 'gt300'   && !(r >= 300))        return false;
-
-    // Last review filter
-    const lastReview = document.getElementById('f-last-review')?.value || 'all';
-    if (lastReview !== 'all') {
-      const now = Date.now() / 1000; // Unix timestamp in seconds
-      const t = l.last_review_time;
-      if (!t) return false; // no review data, exclude
-      const daysAgo = (now - t) / 86400;
-      if (lastReview === '1mo'  && daysAgo > 30)  return false;
-      if (lastReview === '3mo'  && daysAgo > 90)  return false;
-      if (lastReview === '6mo'  && daysAgo > 180) return false;
-      if (lastReview === '1yr'  && daysAgo > 365) return false;
-      if (lastReview === 'old'  && daysAgo <= 365) return false;
-    }
 
     // Rank filter — supports multiple selections
     const selectedRanks = getSelectedRanks();
@@ -1080,30 +883,10 @@ function buildDetail(l) {
 // ─── Pipeline ──────────────────────────────────────────────────────────────
 async function loadPipeline() {
   try {
-    const r = await fetch(API + '/api/pipeline');
-    pipeline = await r.json();
-    // One-time migration: if server is empty but localStorage has leads, push them up
-    if (pipeline.length === 0) {
-      const stored = localStorage.getItem('leadminer-pipeline');
-      if (stored) {
-        const local = JSON.parse(stored);
-        if (local.length > 0) {
-          console.log('Migrating', local.length, 'leads from localStorage to server...');
-          for (const l of local) {
-            try { await fetch(API + '/api/pipeline', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(l) }); } catch {}
-          }
-          pipeline = local;
-          // localStorage.removeItem('leadminer-pipeline');
-          console.log('Migration complete');
-        }
-      }
-    }
-    updatePipelineCount();
-  } catch {
     const stored = localStorage.getItem('leadminer-pipeline');
     pipeline = stored ? JSON.parse(stored) : [];
     updatePipelineCount();
-  }
+  } catch { pipeline = []; }
 }
 
 async function saveLead(i) {
@@ -1113,28 +896,6 @@ async function saveLead(i) {
   localStorage.setItem('leadminer-pipeline', JSON.stringify(pipeline));
   updatePipelineCount();
   renderLeads(document.getElementById('leads-container'));
-  try { await fetch(API + '/api/pipeline', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(l) }); } catch {}
-}
-
-async function addSelectedToPipeline() {
-  const checkboxes = document.querySelectorAll('.lead-checkbox:checked');
-  if (!checkboxes.length) return;
-  const toAdd = [];
-  checkboxes.forEach(cb => {
-    const i = parseInt(cb.dataset.i);
-    const l = leads[i];
-    if (l && !pipeline.find(p => p.place_id === l.place_id)) {
-      pipeline.push({ ...l, status: 'new', added: new Date().toISOString() });
-      toAdd.push(l);
-    }
-  });
-  localStorage.setItem('leadminer-pipeline', JSON.stringify(pipeline));
-  updatePipelineCount();
-  renderLeads(document.getElementById('leads-container'));
-  clearSelection();
-  for (const l of toAdd) {
-    try { await fetch(API + '/api/pipeline', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(l) }); } catch {}
-  }
 }
 
 function updatePipelineCount() {
@@ -1147,15 +908,15 @@ async function updateStatus(placeId, status) {
   const idx = pipeline.findIndex(l => l.place_id === placeId);
   if (idx !== -1) {
     pipeline[idx].status = status;
-    try { await fetch(API + '/api/pipeline/' + encodeURIComponent(placeId), { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status }) }); } catch {}
+    localStorage.setItem('leadminer-pipeline', JSON.stringify(pipeline));
   }
 }
 
 async function removePipeline(placeId) {
   pipeline = pipeline.filter(l => l.place_id !== placeId);
+  localStorage.setItem('leadminer-pipeline', JSON.stringify(pipeline));
   updatePipelineCount();
   renderPipeline();
-  try { await fetch(API + '/api/pipeline/' + encodeURIComponent(placeId), { method: 'DELETE' }); } catch {}
 }
 
 function renderPipeline() {
@@ -1172,7 +933,6 @@ function renderPipeline() {
       <td>
         <div style="font-weight:500;">${esc(l.name)}</div>
         <div class="notes-mini">${esc((l.address || '').split(',').slice(0,2).join(','))}</div>
-        ${l.phone ? `<div class="notes-mini" style="color:var(--muted);">${esc(l.phone)}</div>` : ''}
         ${(l.notes || []).length ? `<div class="notes-mini" style="color:var(--muted2);">${(l.notes||[]).length} note${(l.notes||[]).length>1?'s':''}</div>` : ''}
       </td>
       <td>${l.rating ? `★ ${l.rating}` : '—'}</td>
@@ -1188,8 +948,7 @@ function renderPipeline() {
       </td>
       <td style="color:var(--muted); font-size:12px;">${new Date(l.added).toLocaleDateString()}</td>
       <td>
-        <div style="display:flex; gap:6px; align-items:center;">
-          ${l.phone ? `<a class="btn btn-sm" style="background:var(--accent);color:#000;font-weight:600;text-decoration:none;" href="tel:${l.phone.replace(/\D/g,'')}">📞 Call</a>` : ''}
+        <div style="display:flex; gap:6px;">
           <button class="btn btn-sm" onclick="openNotes('${esc(l.place_id)}')">Notes</button>
           <button class="btn btn-sm btn-danger" onclick="removePipeline('${esc(l.place_id)}')">✕</button>
         </div>
@@ -1222,7 +981,7 @@ async function saveNote() {
   if (idx !== -1) {
     const note = { text, ts: new Date().toISOString() };
     pipeline[idx].notes = [...(pipeline[idx].notes || []), note];
-    try { await fetch(API + '/api/pipeline/' + encodeURIComponent(notesLead.place_id) + '/notes', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text }) }); } catch {}
+    localStorage.setItem('leadminer-pipeline', JSON.stringify(pipeline));
   }
   closeNotes();
   renderPipeline();
@@ -1250,8 +1009,8 @@ function openOutreach(i) {
   const lead = leads[i];
   if (!pipeline.find(p => p.place_id === lead.place_id)) {
     pipeline.push({ ...lead, status: 'new', added: new Date().toISOString() });
+    localStorage.setItem('leadminer-pipeline', JSON.stringify(pipeline));
     updatePipelineCount();
-    try { fetch(API + '/api/pipeline', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(lead) }); } catch {}
   }
   currentLead = lead;
   showPage('outreach', document.querySelectorAll('.nav-item')[2]);
@@ -1526,29 +1285,8 @@ function exportCSV() {
   URL.revokeObjectURL(url);
 }
 
-function toggleMobileNav() {
-  const sidebar = document.getElementById('sidebar');
-  const overlay = document.getElementById('sidebar-overlay');
-  sidebar.classList.toggle('mobile-open');
-  overlay.classList.toggle('open');
-}
-
-function closeMobileNav() {
-  const sidebar = document.getElementById('sidebar');
-  const overlay = document.getElementById('sidebar-overlay');
-  sidebar.classList.remove('mobile-open');
-  overlay.classList.remove('open');
-}
-
 // ─── Multi-industry selection ─────────────────────────────────────────────────
 let selectedIndustries = [];
-
-const ALL_INDUSTRIES = ["Plumbers","Electricians","HVAC","Roofers","Painters","Landscapers","General Contractors","Handyman Services","Cleaning Services","Pest Control","Pool Services","Garage Door Repair","Flooring","Window Cleaning","Restaurants","Bakeries","Coffee Shops","Food Trucks","Catering Services","Bars","Hair Salons","Barbershops","Nail Salons","Spas","Massage Therapy","Tattoo Shops","Med Spas","Dentists","Chiropractors","Optometrists","Physical Therapy","Veterinarians","Gyms","Personal Trainers","Auto Repair","Auto Body Shops","Car Detailing","Towing","Accountants","Lawyers","Real Estate Agents","Insurance Agents","Photographers","Wedding Planners","Florists","Pet Grooming","Tutoring","Daycare Centers","Moving Companies","Junk Removal"];
-
-function selectAllIndustries() {
-  selectedIndustries = [...ALL_INDUSTRIES];
-  renderIndustryTags();
-}
 
 function handleIndustryKey(e) {
   const input = document.getElementById('q-industry');
@@ -1571,13 +1309,6 @@ document.addEventListener('DOMContentLoaded', () => {
       if (val) { addIndustryTag(val); input.value = ''; }
     });
   }
-  const locInput = document.getElementById('q-location');
-  if (locInput) {
-    locInput.addEventListener('change', () => {
-      const val = locInput.value.trim();
-      if (val) { addLocationTag(val); locInput.value = ''; }
-    });
-  }
 });
 
 function addIndustryTag(val) {
@@ -1594,7 +1325,9 @@ function removeIndustryTag(i) {
 function renderIndustryTags() {
   const container = document.getElementById('industry-tags');
   const input = document.getElementById('q-industry');
+  // Remove old tags
   container.querySelectorAll('.industry-tag').forEach(t => t.remove());
+  // Add tags before input
   selectedIndustries.forEach((ind, i) => {
     const tag = document.createElement('span');
     tag.className = 'industry-tag';
@@ -1602,47 +1335,8 @@ function renderIndustryTags() {
     tag.innerHTML = esc(ind) + '<span onclick="removeIndustryTag(' + i + ')" style="cursor:pointer; font-size:14px; line-height:1;">×</span>';
     container.insertBefore(tag, input);
   });
+  // Update placeholder
   input.placeholder = selectedIndustries.length ? 'Add more...' : 'Add industry...';
-}
-
-// ─── Multi-location selection ─────────────────────────────────────────────────
-let selectedLocations = [];
-
-function handleLocationKey(e) {
-  const input = document.getElementById('q-location');
-  const val = input.value.trim();
-  if ((e.key === 'Enter' || e.key === ',') && val) {
-    e.preventDefault();
-    addLocationTag(val);
-    input.value = '';
-  } else if (e.key === 'Backspace' && !val && selectedLocations.length) {
-    removeLocationTag(selectedLocations.length - 1);
-  }
-}
-
-function addLocationTag(val) {
-  if (!val || selectedLocations.includes(val)) return;
-  selectedLocations.push(val);
-  renderLocationTags();
-}
-
-function removeLocationTag(i) {
-  selectedLocations.splice(i, 1);
-  renderLocationTags();
-}
-
-function renderLocationTags() {
-  const container = document.getElementById('location-tags');
-  const input = document.getElementById('q-location');
-  container.querySelectorAll('.location-tag').forEach(t => t.remove());
-  selectedLocations.forEach((loc, i) => {
-    const tag = document.createElement('span');
-    tag.className = 'location-tag';
-    tag.style.cssText = 'background:var(--info); color:#fff; font-size:12px; padding:2px 8px; border-radius:20px; display:flex; align-items:center; gap:4px; white-space:nowrap; font-weight:500;';
-    tag.innerHTML = esc(loc) + '<span onclick="removeLocationTag(' + i + ')" style="cursor:pointer; font-size:14px; line-height:1;">×</span>';
-    container.insertBefore(tag, input);
-  });
-  input.placeholder = selectedLocations.length ? 'Add more...' : 'Add city...';
 }
 
 // ─── Multi-rank filter ────────────────────────────────────────────────────────

@@ -106,7 +106,7 @@ async function enrichPlace(placeId, base, searchRank) {
       'name', 'formatted_address', 'formatted_phone_number',
       'website', 'rating', 'user_ratings_total',
       'opening_hours', 'types', 'url', 'business_status',
-      'photos', 'reviews'
+      'photos'
     ].join(',');
 
     const detailRes = await axios.get(
@@ -132,8 +132,6 @@ async function enrichPlace(placeId, base, searchRank) {
       no_website: !d.website,
       is_hidden_gem: (d.rating >= 4.5) && (d.user_ratings_total < 50) && (d.user_ratings_total > 3),
       photo_ref: d.photos?.[0]?.photo_reference || null,
-      // Last review timestamp
-      last_review_time: d.reviews?.[0]?.time || null,
       // Google Maps search ranking
       search_rank: searchRank || null,
       in_3pack: searchRank <= 3,
@@ -391,77 +389,55 @@ app.get('/api/photo', async (req, res) => {
   }
 });
 
-// ─── Pipeline persistence (JSONBin cloud storage — syncs across all devices) ───
-const JSONBIN_KEY = process.env.JSONBIN_API_KEY;
-const JSONBIN_BASE = 'https://api.jsonbin.io/v3';
-let JSONBIN_BIN_ID = process.env.JSONBIN_BIN_ID || null;
+// ─── Pipeline persistence (server-side JSON store, file-based) ────────────────
+const fs = require('fs');
+const PIPELINE_FILE = path.join(__dirname, 'pipeline.json');
 
-async function loadPipeline() {
-  if (!JSONBIN_KEY) return [];
-  try {
-    if (!JSONBIN_BIN_ID) return [];
-    const r = await axios.get(`${JSONBIN_BASE}/b/${JSONBIN_BIN_ID}/latest`, {
-      headers: { 'X-Master-Key': JSONBIN_KEY }
-    });
-    return r.data.record || [];
-  } catch { return []; }
+function loadPipeline() {
+  try { return JSON.parse(fs.readFileSync(PIPELINE_FILE, 'utf8')); }
+  catch { return []; }
+}
+function savePipelineFile(data) {
+  fs.writeFileSync(PIPELINE_FILE, JSON.stringify(data, null, 2));
 }
 
-async function savePipeline(data) {
-  if (!JSONBIN_KEY) return;
-  try {
-    if (!JSONBIN_BIN_ID) {
-      // Create bin on first save
-      const r = await axios.post(`${JSONBIN_BASE}/b`, data, {
-        headers: { 'X-Master-Key': JSONBIN_KEY, 'Content-Type': 'application/json', 'X-Bin-Name': 'leadradar-pipeline' }
-      });
-      JSONBIN_BIN_ID = r.data.metadata.id;
-      console.log('Created JSONBin:', JSONBIN_BIN_ID, '— add JSONBIN_BIN_ID to Render env vars to persist this ID');
-    } else {
-      await axios.put(`${JSONBIN_BASE}/b/${JSONBIN_BIN_ID}`, data, {
-        headers: { 'X-Master-Key': JSONBIN_KEY, 'Content-Type': 'application/json' }
-      });
-    }
-  } catch(e) { console.error('JSONBin save error:', e.message); }
-}
+app.get('/api/pipeline', (req, res) => res.json(loadPipeline()));
 
-app.get('/api/pipeline', async (req, res) => res.json(await loadPipeline()));
-
-app.post('/api/pipeline', async (req, res) => {
-  const pipeline = await loadPipeline();
+app.post('/api/pipeline', (req, res) => {
+  const pipeline = loadPipeline();
   const lead = req.body;
   if (!lead || !lead.place_id) return res.status(400).json({ error: 'Invalid lead' });
   if (!pipeline.find(l => l.place_id === lead.place_id)) {
     pipeline.push({ ...lead, status: 'new', added: new Date().toISOString() });
-    await savePipeline(pipeline);
+    savePipelineFile(pipeline);
   }
   res.json({ ok: true, total: pipeline.length });
 });
 
-app.patch('/api/pipeline/:id', async (req, res) => {
-  const pipeline = await loadPipeline();
+app.patch('/api/pipeline/:id', (req, res) => {
+  const pipeline = loadPipeline();
   const idx = pipeline.findIndex(l => l.place_id === req.params.id);
   if (idx === -1) return res.status(404).json({ error: 'Not found' });
   pipeline[idx] = { ...pipeline[idx], ...req.body };
-  await savePipeline(pipeline);
+  savePipelineFile(pipeline);
   res.json({ ok: true });
 });
 
-app.delete('/api/pipeline/:id', async (req, res) => {
-  let pipeline = await loadPipeline();
+app.delete('/api/pipeline/:id', (req, res) => {
+  let pipeline = loadPipeline();
   pipeline = pipeline.filter(l => l.place_id !== req.params.id);
-  await savePipeline(pipeline);
+  savePipelineFile(pipeline);
   res.json({ ok: true, total: pipeline.length });
 });
 
 // ─── Notes per lead ───────────────────────────────────────────────────────────
-app.post('/api/pipeline/:id/notes', async (req, res) => {
-  const pipeline = await loadPipeline();
+app.post('/api/pipeline/:id/notes', (req, res) => {
+  const pipeline = loadPipeline();
   const idx = pipeline.findIndex(l => l.place_id === req.params.id);
   if (idx === -1) return res.status(404).json({ error: 'Not found' });
   const note = { text: req.body.text, ts: new Date().toISOString() };
   pipeline[idx].notes = [...(pipeline[idx].notes || []), note];
-  await savePipeline(pipeline);
+  savePipelineFile(pipeline);
   res.json({ ok: true });
 });
 
