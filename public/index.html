@@ -4,6 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>LeadRadar — Find businesses without websites</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='14' fill='%230e0e10'/><circle cx='32' cy='32' r='28' fill='none' stroke='%2300d97e' stroke-width='2' opacity='0.3'/><circle cx='32' cy='32' r='19' fill='none' stroke='%2300d97e' stroke-width='2' opacity='0.5'/><circle cx='32' cy='32' r='10' fill='none' stroke='%2300d97e' stroke-width='2' opacity='0.7'/><circle cx='32' cy='32' r='3' fill='%2300d97e'/><line x1='32' y1='32' x2='50' y2='14' stroke='%2300d97e' stroke-width='2.5' stroke-linecap='round' opacity='0.9'/><circle cx='50' cy='14' r='3' fill='%2300d97e'/></svg>">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="LeadRadar">
 <style>
   :root {
     --bg: #0e0e10;
@@ -55,24 +60,6 @@
   .field input, .field select { height: 38px; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--bg3); color: var(--text); padding: 0 12px; font-size: 14px; outline: none; transition: border-color 0.15s; }
   .field input:focus, .field select:focus { border-color: var(--border2); }
   .field select option { background: var(--bg3); }
-
-  /* Multi-city select */
-  .city-field { position: relative; }
-  .city-input-wrap { min-height: 38px; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--bg3); padding: 4px 6px; display: flex; flex-wrap: wrap; align-items: center; gap: 5px; cursor: text; transition: border-color 0.15s; }
-  .city-input-wrap:focus-within { border-color: var(--border2); }
-  .city-tags { display: flex; flex-wrap: wrap; gap: 5px; }
-  .city-tag { display: inline-flex; align-items: center; gap: 5px; background: rgba(0,217,126,0.12); color: var(--accent); font-size: 12px; font-weight: 500; padding: 3px 6px 3px 9px; border-radius: 20px; white-space: nowrap; }
-  .city-tag button { background: none; border: none; color: var(--accent); cursor: pointer; font-size: 13px; line-height: 1; padding: 0 2px; opacity: 0.7; }
-  .city-tag button:hover { opacity: 1; }
-  .city-input-wrap input { flex: 1; min-width: 100px; border: none; background: transparent; height: 28px; padding: 0 4px; font-size: 14px; color: var(--text); outline: none; }
-  .city-dropdown { position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: var(--bg3); border: 1px solid var(--border2); border-radius: var(--radius-sm); max-height: 220px; overflow-y: auto; z-index: 30; display: none; box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
-  .city-dropdown.show { display: block; }
-  .city-option { display: flex; align-items: center; gap: 9px; padding: 9px 12px; font-size: 13px; cursor: pointer; transition: background 0.1s; }
-  .city-option:hover { background: rgba(255,255,255,0.04); }
-  .city-option input[type="checkbox"] { accent-color: var(--accent); width: 14px; height: 14px; cursor: pointer; }
-  .city-option.add-custom { color: var(--accent); border-top: 1px solid var(--border); }
-  .city-empty-msg { padding: 10px 12px; font-size: 12px; color: var(--muted); }
-  .city-badge { background: var(--bg3); color: var(--muted); border: 1px solid var(--border); }
   .btn { height: 38px; padding: 0 18px; border-radius: var(--radius-sm); border: 1px solid var(--border); background: transparent; color: var(--text); font-size: 13px; font-weight: 500; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.15s; white-space: nowrap; }
   .btn:hover { border-color: var(--border2); background: var(--bg3); }
   .btn:active { transform: scale(0.97); }
@@ -111,6 +98,21 @@
   .b-type { background: var(--bg3); color: var(--muted); border: 1px solid var(--border); }
   .b-saved { background: rgba(0,217,126,0.1); color: var(--accent); }
   .b-open { background: rgba(0,217,126,0.08); color: var(--accent); }
+  .b-has-site { background: rgba(59,130,246,0.1); color: #60a5fa; }
+  .b-rank-top { background: rgba(0,217,126,0.12); color: var(--accent); }
+  .b-rank-mid { background: rgba(245,158,11,0.1); color: var(--warn); }
+  .b-rank-low { background: rgba(239,68,68,0.1); color: #f87171; }
+  .b-traffic-green { background: rgba(0,217,126,0.12); color: var(--accent); }
+  .b-traffic-yellow { background: rgba(245,158,11,0.1); color: var(--warn); }
+  .b-traffic-orange { background: rgba(249,115,22,0.12); color: #fb923c; }
+  .b-traffic-red { background: rgba(239,68,68,0.1); color: #f87171; }
+  .b-grade-a { background: rgba(0,217,126,0.12); color: var(--accent); }
+  .b-grade-b { background: rgba(59,130,246,0.12); color: #60a5fa; }
+  .b-grade-c { background: rgba(245,158,11,0.12); color: var(--warn); }
+  .b-grade-d { background: rgba(239,68,68,0.12); color: #f87171; }
+  .b-grade-f { background: rgba(239,68,68,0.2); color: #ef4444; }
+  .web-check-row { margin-top: 12px; padding: 12px; background: var(--bg3); border-radius: var(--radius-sm); font-size: 13px; }
+  .issue-tag { background: rgba(239,68,68,0.1); color: #f87171; padding: 2px 8px; border-radius: 20px; font-size: 11px; }
   .lead-footer { display: flex; gap: 8px; margin-top: 12px; align-items: center; }
   .lead-phone { font-size: 12px; color: var(--muted); margin-left: auto; }
 
@@ -243,25 +245,274 @@
     <div class="search-panel">
       <div class="search-row">
         <div class="field" style="flex:2;">
-          <label>Industry</label>
-          <input type="text" id="q-industry" placeholder="e.g. plumbers, nail salons, dentists" value="restaurants">
-        </div>
-        <div class="field city-field" style="flex:1.5; position:relative;">
-          <label>Location</label>
-          <div class="city-input-wrap" id="city-input-wrap" onclick="toggleCityDropdown(true)">
-            <div class="city-tags" id="city-tags"></div>
-            <input type="text" id="q-location" placeholder="Type a city or pick below…" autocomplete="off"
-                   oninput="filterCityDropdown()" onkeydown="cityInputKeydown(event)" onfocus="toggleCityDropdown(true)">
+          <label style="display:flex;align-items:center;justify-content:space-between;">
+            <span>Industry <span style="color:var(--muted2); font-size:10px; font-weight:400;">select multiple</span></span>
+            <span onclick="selectAllIndustries()" style="font-size:11px;color:var(--accent);cursor:pointer;font-weight:500;">Select all</span>
+          </label>
+          <div id="industry-tags" style="min-height:38px; border:1px solid var(--border); border-radius:var(--radius-sm); background:var(--bg3); padding:4px 8px; display:flex; flex-wrap:wrap; gap:4px; align-items:center; cursor:text;" onclick="document.getElementById('q-industry').focus()">
+            <input type="text" id="q-industry" list="industry-list" placeholder="Add industry..." autocomplete="off"
+              style="border:none; background:transparent; color:var(--text); font-size:14px; outline:none; flex:1; min-width:120px; height:28px;"
+              onkeydown="handleIndustryKey(event)">
           </div>
-          <div class="city-dropdown" id="city-dropdown"></div>
+        <datalist id="industry-list">
+          <!-- Home Services -->
+          <option value="Plumbers">
+          <option value="Electricians">
+          <option value="HVAC">
+          <option value="Roofers">
+          <option value="Painters">
+          <option value="Landscapers">
+          <option value="General Contractors">
+          <option value="Handyman Services">
+          <option value="Cleaning Services">
+          <option value="Pest Control">
+          <option value="Pool Services">
+          <option value="Garage Door Repair">
+          <option value="Flooring">
+          <option value="Window Cleaning">
+          <!-- Food & Drink -->
+          <option value="Restaurants">
+          <option value="Bakeries">
+          <option value="Coffee Shops">
+          <option value="Food Trucks">
+          <option value="Catering Services">
+          <option value="Bars">
+          <!-- Health & Beauty -->
+          <option value="Hair Salons">
+          <option value="Barbershops">
+          <option value="Nail Salons">
+          <option value="Spas">
+          <option value="Massage Therapy">
+          <option value="Tattoo Shops">
+          <option value="Med Spas">
+          <!-- Medical -->
+          <option value="Dentists">
+          <option value="Chiropractors">
+          <option value="Optometrists">
+          <option value="Physical Therapy">
+          <option value="Veterinarians">
+          <option value="Gyms">
+          <option value="Personal Trainers">
+          <!-- Auto -->
+          <option value="Auto Repair">
+          <option value="Auto Body Shops">
+          <option value="Car Detailing">
+          <option value="Towing">
+          <!-- Professional -->
+          <option value="Accountants">
+          <option value="Lawyers">
+          <option value="Real Estate Agents">
+          <option value="Insurance Agents">
+          <option value="Photographers">
+          <option value="Wedding Planners">
+          <!-- Retail & Other -->
+          <option value="Florists">
+          <option value="Pet Grooming">
+          <option value="Tutoring">
+          <option value="Daycare Centers">
+          <option value="Moving Companies">
+          <option value="Junk Removal">
+        </datalist>
         </div>
-        <div class="field" style="flex:1;">
-          <label>Filter</label>
-          <select id="q-filter">
-            <option value="no_website">No website only</option>
-            <option value="hidden_gems">Hidden gems (4.5★, &lt;50 reviews)</option>
+        <div class="field" style="flex:1.5;">
+          <label>Location <span style="color:var(--muted2); font-size:10px; font-weight:400;">select multiple</span></label>
+          <div id="location-tags" style="min-height:38px; border:1px solid var(--border); border-radius:var(--radius-sm); background:var(--bg3); padding:4px 8px; display:flex; flex-wrap:wrap; gap:4px; align-items:center; cursor:text;" onclick="document.getElementById('q-location').focus()">
+            <input type="text" id="q-location" list="location-list" placeholder="Add city..." autocomplete="off"
+              style="border:none; background:transparent; color:var(--text); font-size:14px; outline:none; flex:1; min-width:120px; height:28px;"
+              onkeydown="handleLocationKey(event)">
+          </div>
+        <datalist id="location-list">
+          <!-- Utah -->
+          <option value="Salt Lake City, UT"><option value="West Valley City, UT"><option value="Provo, UT">
+          <option value="West Jordan, UT"><option value="Orem, UT"><option value="Sandy, UT">
+          <option value="Ogden, UT"><option value="St. George, UT"><option value="Layton, UT">
+          <option value="South Jordan, UT"><option value="Taylorsville, UT"><option value="Logan, UT">
+          <option value="Lehi, UT"><option value="Murray, UT"><option value="Millcreek, UT">
+          <option value="Draper, UT"><option value="Bountiful, UT"><option value="Riverton, UT">
+          <option value="Roy, UT"><option value="Spanish Fork, UT"><option value="Pleasant Grove, UT">
+          <option value="Cottonwood Heights, UT"><option value="Springville, UT"><option value="American Fork, UT">
+          <option value="Herriman, UT"><option value="Kaysville, UT"><option value="Cedar City, UT">
+          <option value="Midvale, UT"><option value="Syracuse, UT"><option value="Clearfield, UT">
+          <option value="Tooele, UT"><option value="South Salt Lake, UT"><option value="Holladay, UT">
+          <option value="Eagle Mountain, UT"><option value="Saratoga Springs, UT"><option value="Payson, UT">
+          <option value="North Ogden, UT"><option value="Washington, UT"><option value="Brigham City, UT">
+          <option value="Magna, UT"><option value="Santaquin, UT"><option value="Clinton, UT">
+          <option value="North Salt Lake, UT"><option value="Highland, UT"><option value="Bluffdale, UT">
+          <option value="Price, UT"><option value="Vernal, UT"><option value="Moab, UT">
+          <option value="Heber City, UT"><option value="Park City, UT"><option value="Nephi, UT">
+          <option value="Richfield, UT"><option value="Ephraim, UT"><option value="Manti, UT">
+          <option value="Roosevelt, UT"><option value="Duchesne, UT"><option value="Kanab, UT">
+          <!-- Arizona -->
+          <option value="Phoenix, AZ"><option value="Tucson, AZ"><option value="Mesa, AZ">
+          <option value="Chandler, AZ"><option value="Scottsdale, AZ"><option value="Gilbert, AZ">
+          <option value="Glendale, AZ"><option value="Tempe, AZ"><option value="Peoria, AZ">
+          <option value="Surprise, AZ"><option value="Goodyear, AZ"><option value="Buckeye, AZ">
+          <option value="Yuma, AZ"><option value="Avondale, AZ"><option value="Flagstaff, AZ">
+          <option value="Maricopa, AZ"><option value="Casa Grande, AZ"><option value="Lake Havasu City, AZ">
+          <option value="Sierra Vista, AZ"><option value="Prescott, AZ"><option value="Prescott Valley, AZ">
+          <option value="Apache Junction, AZ"><option value="El Mirage, AZ"><option value="Queen Creek, AZ">
+          <option value="Bullhead City, AZ"><option value="San Tan Valley, AZ"><option value="Kingman, AZ">
+          <option value="Fountain Hills, AZ"><option value="Sahuarita, AZ"><option value="Oro Valley, AZ">
+          <option value="Marana, AZ"><option value="Florence, AZ"><option value="Coolidge, AZ">
+          <option value="Douglas, AZ"><option value="Nogales, AZ"><option value="Sedona, AZ">
+          <option value="Show Low, AZ"><option value="Payson, AZ"><option value="Cottonwood, AZ">
+          <option value="Camp Verde, AZ"><option value="Globe, AZ"><option value="Safford, AZ">
+          <option value="Winslow, AZ"><option value="Holbrook, AZ"><option value="Williams, AZ">
+          <option value="Page, AZ"><option value="Wickenburg, AZ"><option value="Anthem, AZ">
+          <option value="Sun City, AZ"><option value="Sun City West, AZ"><option value="Litchfield Park, AZ">
+          <option value="Tolleson, AZ"><option value="Youngtown, AZ"><option value="Guadalupe, AZ">
+          <!-- Colorado -->
+          <option value="Denver, CO"><option value="Colorado Springs, CO"><option value="Aurora, CO">
+          <option value="Fort Collins, CO"><option value="Lakewood, CO"><option value="Thornton, CO">
+          <option value="Arvada, CO"><option value="Westminster, CO"><option value="Pueblo, CO">
+          <option value="Centennial, CO"><option value="Boulder, CO"><option value="Highlands Ranch, CO">
+          <option value="Greeley, CO"><option value="Longmont, CO"><option value="Loveland, CO">
+          <option value="Broomfield, CO"><option value="Castle Rock, CO"><option value="Commerce City, CO">
+          <option value="Parker, CO"><option value="Northglenn, CO"><option value="Brighton, CO">
+          <option value="Littleton, CO"><option value="Englewood, CO"><option value="Wheat Ridge, CO">
+          <option value="Fountain, CO"><option value="Windsor, CO"><option value="Evans, CO">
+          <option value="Erie, CO"><option value="Lafayette, CO"><option value="Louisville, CO">
+          <option value="Durango, CO"><option value="Steamboat Springs, CO"><option value="Aspen, CO">
+          <option value="Vail, CO"><option value="Telluride, CO"><option value="Breckenridge, CO">
+          <option value="Montrose, CO"><option value="Grand Junction, CO"><option value="Glenwood Springs, CO">
+          <option value="Alamosa, CO"><option value="La Junta, CO"><option value="Trinidad, CO">
+          <option value="Walsenburg, CO"><option value="Canon City, CO"><option value="Florence, CO">
+          <option value="Pueblo West, CO"><option value="Security-Widefield, CO"><option value="Falcon, CO">
+          <option value="Woodland Park, CO"><option value="Salida, CO"><option value="Buena Vista, CO">
+          <option value="Leadville, CO"><option value="Silverthorne, CO"><option value="Frisco, CO">
+          <option value="Dillon, CO"><option value="Avon, CO"><option value="Edwards, CO">
+          <option value="Basalt, CO"><option value="Carbondale, CO"><option value="Rifle, CO">
+          <option value="Fruita, CO"><option value="Delta, CO"><option value="Gunnison, CO">
+          <option value="Crested Butte, CO"><option value="Pagosa Springs, CO"><option value="Cortez, CO">
+          <option value="Fort Morgan, CO"><option value="Sterling, CO"><option value="Yuma, CO">
+          <option value="Akron, CO"><option value="Wray, CO"><option value="Burlington, CO">
+          <!-- California -->
+          <option value="Los Angeles, CA"><option value="San Diego, CA"><option value="San Jose, CA">
+          <option value="San Francisco, CA"><option value="Fresno, CA"><option value="Sacramento, CA">
+          <option value="Long Beach, CA"><option value="Oakland, CA"><option value="Bakersfield, CA">
+          <option value="Anaheim, CA"><option value="Santa Ana, CA"><option value="Riverside, CA">
+          <option value="Stockton, CA"><option value="Irvine, CA"><option value="Chula Vista, CA">
+          <option value="Fremont, CA"><option value="San Bernardino, CA"><option value="Modesto, CA">
+          <option value="Fontana, CA"><option value="Moreno Valley, CA"><option value="Glendale, CA">
+          <option value="Huntington Beach, CA"><option value="Santa Clarita, CA"><option value="Garden Grove, CA">
+          <option value="Oceanside, CA"><option value="Rancho Cucamonga, CA"><option value="Santa Rosa, CA">
+          <option value="Ontario, CA"><option value="Lancaster, CA"><option value="Elk Grove, CA">
+          <option value="Palmdale, CA"><option value="Salinas, CA"><option value="Sunnyvale, CA">
+          <option value="Pomona, CA"><option value="Escondido, CA"><option value="Torrance, CA">
+          <option value="Pasadena, CA"><option value="Hayward, CA"><option value="Fullerton, CA">
+          <option value="Orange, CA"><option value="Roseville, CA"><option value="Visalia, CA">
+          <option value="Concord, CA"><option value="Victorville, CA"><option value="Simi Valley, CA">
+          <option value="Santa Clara, CA"><option value="Vallejo, CA"><option value="Berkeley, CA">
+          <option value="El Monte, CA"><option value="Downey, CA"><option value="Costa Mesa, CA">
+          <option value="Inglewood, CA"><option value="West Covina, CA"><option value="Norwalk, CA">
+          <option value="Burbank, CA"><option value="Antioch, CA"><option value="Richmond, CA">
+          <option value="Temecula, CA"><option value="Murrieta, CA"><option value="Thousand Oaks, CA">
+          <option value="Ventura, CA"><option value="Santa Barbara, CA"><option value="San Buenaventura, CA">
+          <option value="Oxnard, CA"><option value="Chico, CA"><option value="Redding, CA">
+          <option value="Santa Maria, CA"><option value="El Cajon, CA"><option value="Rialto, CA">
+          <option value="Daly City, CA"><option value="San Mateo, CA"><option value="Compton, CA">
+          <option value="Clovis, CA"><option value="Jurupa Valley, CA"><option value="South Gate, CA">
+          <option value="Vista, CA"><option value="Carson, CA"><option value="Santa Monica, CA">
+          <option value="Hesperia, CA"><option value="Westminster, CA"><option value="Redondo Beach, CA">
+          <option value="Hawthorne, CA"><option value="Whittier, CA"><option value="Newport Beach, CA">
+          <option value="Alhambra, CA"><option value="San Leandro, CA"><option value="Menifee, CA">
+          <option value="Lakewood, CA"><option value="Indio, CA"><option value="Palm Springs, CA">
+          <option value="Palm Desert, CA"><option value="Cathedral City, CA"><option value="Coachella, CA">
+          <option value="Napa, CA"><option value="Petaluma, CA"><option value="Fairfield, CA">
+          <option value="Vacaville, CA"><option value="San Ramon, CA"><option value="Pleasanton, CA">
+          <option value="Livermore, CA"><option value="Folsom, CA"><option value="Citrus Heights, CA">
+          <option value="Manteca, CA"><option value="Turlock, CA"><option value="Merced, CA">
+          <option value="Yuba City, CA"><option value="Redlands, CA"><option value="Yucaipa, CA">
+          <option value="Lake Forest, CA"><option value="Mission Viejo, CA"><option value="San Clemente, CA">
+          <!-- Nevada -->
+          <option value="Las Vegas, NV"><option value="Henderson, NV"><option value="Reno, NV">
+          <option value="North Las Vegas, NV"><option value="Sparks, NV"><option value="Carson City, NV">
+          <option value="Fernley, NV"><option value="Elko, NV"><option value="Mesquite, NV">
+          <option value="Boulder City, NV"><option value="Fallon, NV"><option value="Winnemucca, NV">
+          <option value="West Wendover, NV"><option value="Ely, NV"><option value="Yerington, NV">
+          <option value="Laughlin, NV"><option value="Pahrump, NV"><option value="Summerlin, NV">
+          <option value="Enterprise, NV"><option value="Spring Valley, NV"><option value="Sunrise Manor, NV">
+          <option value="Whitney, NV"><option value="Winchester, NV"><option value="Paradise, NV">
+          <option value="Sun Valley, NV"><option value="Gardnerville, NV"><option value="Minden, NV">
+          <option value="Incline Village, NV"><option value="Dayton, NV"><option value="Battle Mountain, NV">
+          <!-- Idaho -->
+          <option value="Boise, ID"><option value="Nampa, ID"><option value="Meridian, ID">
+          <option value="Idaho Falls, ID"><option value="Pocatello, ID"><option value="Caldwell, ID">
+          <option value="Coeur d'Alene, ID"><option value="Twin Falls, ID"><option value="Lewiston, ID">
+          <option value="Moscow, ID"><option value="Rexburg, ID"><option value="Eagle, ID">
+          <option value="Kuna, ID"><option value="Post Falls, ID"><option value="Sandpoint, ID">
+          <option value="Ammon, ID"><option value="Garden City, ID"><option value="Star, ID">
+          <option value="Middleton, ID"><option value="Chubbuck, ID"><option value="Burley, ID">
+          <option value="Hailey, ID"><option value="Mountain Home, ID"><option value="Jerome, ID">
+          <option value="Blackfoot, ID"><option value="Hayden, ID"><option value="Rathdrum, ID">
+          <option value="Rupert, ID"><option value="Payette, ID"><option value="Weiser, ID">
+          <option value="McCall, ID"><option value="Emmett, ID"><option value="Shelley, ID">
+          <option value="American Falls, ID"><option value="Gooding, ID"><option value="Grangeville, ID">
+          <option value="St. Anthony, ID"><option value="Preston, ID"><option value="Soda Springs, ID">
+          <option value="Driggs, ID"><option value="Victor, ID"><option value="Salmon, ID">
+        </datalist>
+        </div>
+        <div class="field" style="flex:1; min-width:130px;">
+          <label>Website</label>
+          <select id="f-website" onchange="applyFilters()">
             <option value="all">All businesses</option>
+            <option value="no_website">No website</option>
+            <option value="has_website">Has website (any)</option>
+            <optgroup label="── Template builders ──">
+              <option value="wix">Wix site</option>
+              <option value="squarespace">Squarespace site</option>
+              <option value="weebly">Weebly site</option>
+              <option value="godaddy">GoDaddy site</option>
+              <option value="jimdo">Jimdo site</option>
+              <option value="any_template">Any template builder</option>
+            </optgroup>
+            <option value="free_email">Has Gmail/free email</option>
+            <option value="no_ssl">No SSL (not secure)</option>
           </select>
+        </div>
+        <div class="field" style="flex:1; min-width:130px;">
+          <label>Reviews</label>
+          <select id="f-reviews" onchange="applyFilters()">
+            <option value="all">Any reviews</option>
+            <option value="lt20">Under 20</option>
+            <option value="20to50">20 – 50</option>
+            <option value="50to100">50 – 100</option>
+            <option value="100to150">100 – 150</option>
+            <option value="150to200">150 – 200</option>
+            <option value="200to250">200 – 250</option>
+            <option value="250to300">250 – 300</option>
+            <option value="gt300">300+</option>
+          </select>
+        </div>
+        <div class="field" style="flex:1; min-width:130px;">
+          <label>Last Review</label>
+          <select id="f-last-review" onchange="applyFilters()">
+            <option value="all">Any time</option>
+            <option value="1mo">Within 1 month</option>
+            <option value="3mo">Within 3 months</option>
+            <option value="6mo">Within 6 months</option>
+            <option value="1yr">Within 1 year</option>
+            <option value="old">1+ years ago</option>
+          </select>
+        </div>
+        <div class="field" style="flex:1; min-width:130px; position:relative;">
+          <label>Google rank</label>
+          <div id="rank-btn" onclick="toggleRankDropdown()" style="height:38px; border:1px solid var(--border); border-radius:var(--radius-sm); background:var(--bg3); color:var(--text); padding:0 12px; font-size:14px; display:flex; align-items:center; justify-content:space-between; cursor:pointer; user-select:none;">
+            <span id="rank-btn-label">Any rank</span>
+            <span style="opacity:0.5;">▾</span>
+          </div>
+          <div id="rank-dropdown" style="display:none; position:absolute; top:62px; left:0; right:0; background:var(--bg2); border:1px solid var(--border); border-radius:var(--radius-sm); z-index:100; padding:8px 0; min-width:160px;">
+            <label style="display:flex; align-items:center; gap:8px; padding:6px 14px; font-size:13px; cursor:pointer; color:var(--muted);">
+              <input type="checkbox" id="rank-all" onchange="rankAllChanged(this)" checked style="accent-color:var(--accent);"> Any rank
+            </label>
+            <hr style="border-color:var(--border); margin:4px 0;">
+            <label style="display:flex; align-items:center; gap:8px; padding:6px 14px; font-size:13px; cursor:pointer;"><input type="checkbox" class="rank-cb" value="1to10" onchange="rankCbChanged()" style="accent-color:var(--accent);"> Rank #1 – 10</label>
+            <label style="display:flex; align-items:center; gap:8px; padding:6px 14px; font-size:13px; cursor:pointer;"><input type="checkbox" class="rank-cb" value="11to20" onchange="rankCbChanged()" style="accent-color:var(--accent);"> Rank #11 – 20</label>
+            <label style="display:flex; align-items:center; gap:8px; padding:6px 14px; font-size:13px; cursor:pointer;"><input type="checkbox" class="rank-cb" value="21to30" onchange="rankCbChanged()" style="accent-color:var(--accent);"> Rank #21 – 30</label>
+            <label style="display:flex; align-items:center; gap:8px; padding:6px 14px; font-size:13px; cursor:pointer;"><input type="checkbox" class="rank-cb" value="31to40" onchange="rankCbChanged()" style="accent-color:var(--accent);"> Rank #31 – 40</label>
+            <label style="display:flex; align-items:center; gap:8px; padding:6px 14px; font-size:13px; cursor:pointer;"><input type="checkbox" class="rank-cb" value="41to50" onchange="rankCbChanged()" style="accent-color:var(--accent);"> Rank #41 – 50</label>
+            <label style="display:flex; align-items:center; gap:8px; padding:6px 14px; font-size:13px; cursor:pointer;"><input type="checkbox" class="rank-cb" value="51to60" onchange="rankCbChanged()" style="accent-color:var(--accent);"> Rank #51 – 60</label>
+          </div>
         </div>
         <div class="field" style="flex:0; justify-content:flex-end; padding-top:16px;">
           <button class="btn btn-accent" onclick="searchLeads()">
@@ -270,8 +521,23 @@
           </button>
         </div>
       </div>
+      <div style="font-size:11px; color:var(--muted2); margin-top:8px;">
+        Filters apply instantly to loaded results — no need to re-search
+      </div>
     </div>
 
+    <div id="bulk-toolbar" style="display:none; align-items:center; gap:12px; margin-bottom:12px; background:var(--bg2); border:1px solid var(--border); border-radius:var(--radius); padding:10px 16px;">
+      <input type="checkbox" id="select-all" onchange="toggleSelectAll(this)" style="width:16px; height:16px; cursor:pointer; accent-color:var(--accent);">
+      <label for="select-all" style="font-size:13px; color:var(--muted); cursor:pointer;">Select all</label>
+      <span id="selected-count" style="font-size:13px; color:var(--text);">0 selected</span>
+      <button class="btn btn-accent btn-sm" onclick="addSelectedToPipeline()" style="margin-left:auto;">
+        + Add to Pipeline
+      </button>
+      <button class="btn btn-accent btn-sm" onclick="exportCSV()" style="background:var(--bg3); color:var(--text);">
+        ↓ Export CSV
+      </button>
+      <button class="btn btn-sm" onclick="clearSelection()">Clear</button>
+    </div>
     <div class="stats">
       <div class="stat"><div class="stat-label">Found</div><div class="stat-val" id="s-found">—</div></div>
       <div class="stat"><div class="stat-label">No website</div><div class="stat-val green" id="s-noweb">—</div></div>
@@ -289,7 +555,10 @@
 
   <!-- ── PIPELINE PAGE ── -->
   <div id="page-pipeline" style="display:none;">
-    <div class="page-title">Pipeline</div>
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:4px;">
+      <div class="page-title">Pipeline</div>
+      <button class="btn btn-accent btn-sm" onclick="exportPipelineCSV()">↓ Export CSV</button>
+    </div>
     <div class="page-sub">Track your saved leads from first contact to closed deal</div>
     <div id="pipeline-container">
       <div class="empty">
@@ -352,148 +621,8 @@ let currentLead = null;
 let outreachType = 'email';
 let notesLead = null;
 
-// ─── Multi-city select ─────────────────────────────────────────────────────
-const COMMON_CITIES = [
-  // Original quick-picks
-  'Austin, TX', 'Dallas, TX', 'Houston, TX', 'San Antonio, TX',
-  'Phoenix, AZ', 'Denver, CO', 'Salt Lake City, UT', 'Las Vegas, NV',
-  'Los Angeles, CA', 'San Diego, CA', 'San Francisco, CA', 'Seattle, WA',
-  'Portland, OR', 'Chicago, IL', 'Minneapolis, MN', 'Atlanta, GA',
-  'Miami, FL', 'Tampa, FL', 'Orlando, FL', 'Charlotte, NC',
-  'Nashville, TN', 'New York, NY', 'Boston, MA', 'Philadelphia, PA',
-
-  // West US cities, roughly 75k-150k population
-  // California
-  'Visalia, CA', 'Victorville, CA', 'Fullerton, CA', 'Torrance, CA', 'Orange, CA',
-  'Pasadena, CA', 'Santa Clara, CA', 'Clovis, CA', 'Simi Valley, CA', 'Thousand Oaks, CA',
-  'Concord, CA', 'Vallejo, CA', 'Fairfield, CA', 'Berkeley, CA', 'Antioch, CA',
-  'Menifee, CA', 'Richmond, CA', 'Carlsbad, CA', 'Murrieta, CA', 'Temecula, CA',
-  'Santa Maria, CA', 'Ventura, CA', 'Downey, CA', 'Costa Mesa, CA', 'Jurupa Valley, CA',
-  'West Covina, CA', 'Rialto, CA', 'El Monte, CA', 'Vacaville, CA', 'Burbank, CA',
-  'El Cajon, CA', 'San Mateo, CA', 'Chico, CA', 'Inglewood, CA', 'Hesperia, CA',
-  'Daly City, CA', 'Tracy, CA', 'Vista, CA', 'Norwalk, CA', 'San Marcos, CA',
-  'Merced, CA', 'Manteca, CA', 'Indio, CA', 'Chino, CA', 'Redding, CA',
-  'Hemet, CA', 'Mission Viejo, CA', 'Carson, CA', 'Compton, CA', 'South Gate, CA',
-  'Santa Monica, CA', 'Westminster, CA', 'Folsom, CA', 'Mountain View, CA', 'Santa Barbara, CA',
-  'Lake Forest, CA', 'Citrus Heights, CA', 'San Leandro, CA', 'San Ramon, CA', 'Whittier, CA',
-  'Livermore, CA',
-  // Arizona
-  'Avondale, AZ', 'Yuma, AZ', 'Casa Grande, AZ',
-  // Nevada
-  'Sparks, NV',
-  // Washington
-  'Spokane Valley, WA', 'Federal Way, WA', 'Renton, WA', 'Kent, WA', 'Everett, WA',
-  'Yakima, WA', 'Kirkland, WA', 'Bellingham, WA', 'Kennewick, WA', 'Auburn, WA',
-  'Pasco, WA', 'Marysville, WA', 'Redmond, WA', 'Lakewood, WA',
-  // Oregon
-  'Gresham, OR', 'Hillsboro, OR', 'Bend, OR', 'Beaverton, OR', 'Medford, OR',
-  'Springfield, OR', 'Corvallis, OR', 'Albany, OR',
-  // Colorado
-  'Greeley, CO', 'Pueblo, CO', 'Centennial, CO', 'Boulder, CO', 'Highlands Ranch, CO',
-  'Longmont, CO', 'Castle Rock, CO', 'Loveland, CO', 'Broomfield, CO', 'Arvada, CO',
-  'Westminster, CO',
-  // Utah
-  'West Jordan, UT', 'Provo, UT', 'Orem, UT', 'Sandy, UT', 'Ogden, UT',
-  'South Jordan, UT', 'Layton, UT', 'Lehi, UT', 'Millcreek, UT', 'West Valley City, UT',
-  // Idaho
-  'Meridian, ID', 'Nampa, ID',
-  // Montana
-  'Billings, MT', 'Missoula, MT',
-  // New Mexico
-  'Las Cruces, NM', 'Rio Rancho, NM', 'Albuquerque, NM', 'Santa Fe, NM'
-];
-let selectedCities = [];
-let cityDropdownOpen = false;
-
-function renderCityTags() {
-  document.getElementById('city-tags').innerHTML = selectedCities.map(c => `
-    <span class="city-tag">${esc(c)}<button type="button" onclick="event.stopPropagation(); removeCity('${esc(c).replace(/'/g, "\\'")}')">✕</button></span>
-  `).join('');
-}
-
-function addCity(city) {
-  city = city.trim().replace(/,\s*$/, '');
-  if (!city) return;
-  const exists = selectedCities.some(c => c.toLowerCase() === city.toLowerCase());
-  if (!exists) selectedCities.push(city);
-  document.getElementById('q-location').value = '';
-  renderCityTags();
-  filterCityDropdown();
-}
-
-function removeCity(city) {
-  selectedCities = selectedCities.filter(c => c !== city);
-  renderCityTags();
-  filterCityDropdown();
-}
-
-function toggleCityDropdown(open) {
-  cityDropdownOpen = open;
-  filterCityDropdown();
-}
-
-function filterCityDropdown() {
-  const dd = document.getElementById('city-dropdown');
-  const q = document.getElementById('q-location').value.trim().toLowerCase();
-
-  if (!cityDropdownOpen) { dd.classList.remove('show'); return; }
-
-  const matches = COMMON_CITIES.filter(c => c.toLowerCase().includes(q));
-  let html = '';
-
-  if (matches.length) {
-    html += matches.map(c => {
-      const checked = selectedCities.some(s => s.toLowerCase() === c.toLowerCase());
-      return `<label class="city-option" onclick="event.stopPropagation();">
-        <input type="checkbox" ${checked ? 'checked' : ''} onchange="toggleCityChecked('${esc(c).replace(/'/g, "\\'")}', this.checked)">
-        ${esc(c)}
-      </label>`;
-    }).join('');
-  } else {
-    html += `<div class="city-empty-msg">No matching preset cities</div>`;
-  }
-
-  if (q && !COMMON_CITIES.some(c => c.toLowerCase() === q)) {
-    html += `<div class="city-option add-custom" onclick="event.stopPropagation(); addCity(document.getElementById('q-location').value); toggleCityDropdown(true);">
-      + Add "${esc(document.getElementById('q-location').value.trim())}"
-    </div>`;
-  }
-
-  dd.innerHTML = html;
-  dd.classList.add('show');
-}
-
-function toggleCityChecked(city, isChecked) {
-  if (isChecked) addCity(city);
-  else removeCity(city);
-  // Keep dropdown open and refocus input so user can keep selecting
-  toggleCityDropdown(true);
-  document.getElementById('q-location').focus();
-}
-
-function cityInputKeydown(e) {
-  if (e.key === 'Enter') {
-    e.preventDefault();
-    addCity(e.target.value);
-  } else if (e.key === 'Backspace' && !e.target.value && selectedCities.length) {
-    removeCity(selectedCities[selectedCities.length - 1]);
-  } else if (e.key === 'Escape') {
-    toggleCityDropdown(false);
-  }
-}
-
-document.addEventListener('click', (e) => {
-  const wrap = document.getElementById('city-input-wrap');
-  const dd = document.getElementById('city-dropdown');
-  if (wrap && dd && !wrap.contains(e.target) && !dd.contains(e.target)) {
-    toggleCityDropdown(false);
-  }
-});
-
 // ─── Init ──────────────────────────────────────────────────────────────────
 async function init() {
-  selectedCities = ['Austin, TX'];
-  renderCityTags();
   await checkHealth();
   await loadPipeline();
 }
@@ -530,60 +659,70 @@ function showPage(name, el) {
 
 // ─── Lead search ───────────────────────────────────────────────────────────
 async function searchLeads() {
-  const industry = document.getElementById('q-industry').value.trim();
-  // Commit anything still typed in the city input as a city too
-  const pendingCity = document.getElementById('q-location').value.trim();
-  if (pendingCity) addCity(pendingCity);
+  const typedIndustry = document.getElementById('q-industry').value.trim();
+  if (typedIndustry && !selectedIndustries.includes(typedIndustry)) addIndustryTag(typedIndustry);
+  document.getElementById('q-industry').value = '';
 
-  const cities = [...selectedCities];
-  const filter = document.getElementById('q-filter').value;
-  if (!industry || !cities.length) return;
+  const typedLocation = document.getElementById('q-location').value.trim();
+  if (typedLocation && !selectedLocations.includes(typedLocation)) addLocationTag(typedLocation);
+  document.getElementById('q-location').value = '';
 
-  toggleCityDropdown(false);
+  // Wait one tick to ensure any pending tag additions are complete
+  await new Promise(r => setTimeout(r, 10));
+
+  const industries = [...selectedIndustries];
+  const locations = [...selectedLocations];
+
+  if (!industries.length || !locations.length) {
+    alert('Please add at least one industry and one location.');
+    return;
+  }
 
   const container = document.getElementById('leads-container');
-  const citiesLabel = cities.length > 1 ? `${cities.length} cities` : cities[0];
-  container.innerHTML = `<div class="loading"><span class="spinner"></span> Scanning ${esc(citiesLabel)} for ${esc(industry)}…</div>`;
+  container.innerHTML = `<div class="loading"><span class="spinner"></span> Scanning ${locations.join(', ')} for ${industries.join(', ')}…</div>`;
 
   try {
-    const results = await Promise.all(cities.map(async city => {
-      const params = new URLSearchParams({ industry, location: city, filter });
-      const r = await fetch(API + '/api/leads?' + params);
-      const d = await r.json();
-      return { city, data: d };
-    }));
+    const combos = [];
+    industries.forEach(industry => locations.forEach(location => combos.push({ industry, location })));
 
-    const failed = results.filter(r => r.data && r.data.error);
-    if (failed.length === results.length) {
-      container.innerHTML = `<div class="empty"><p style="color:var(--danger)">Error: ${esc(failed[0].data.message || 'Search failed')}</p></div>`;
-      return;
+    const seen = new Set();
+    const merged = [];
+    const BATCH = 3;
+
+    for (let i = 0; i < combos.length; i += BATCH) {
+      const batch = combos.slice(i, i + BATCH);
+      const batchResults = await Promise.all(batch.map(async ({ industry, location }) => {
+        try {
+          const params = new URLSearchParams({ industry, location });
+          const controller = new AbortController();
+          const timer = setTimeout(() => controller.abort(), 15000);
+          const r = await fetch(API + '/api/leads?' + params, { signal: controller.signal });
+          clearTimeout(timer);
+          const d = await r.json();
+          return d.leads || [];
+        } catch { return []; }
+      }));
+      batchResults.flat().forEach(l => {
+        if (!seen.has(l.place_id)) { seen.add(l.place_id); merged.push(l); }
+      });
+      document.getElementById('s-found').textContent = merged.length;
+      document.getElementById('s-noweb').textContent = merged.filter(l => l.no_website).length;
+      document.getElementById('s-gems').textContent = merged.filter(l => l.is_hidden_gem).length;
+      container.innerHTML = `<div class="loading"><span class="spinner"></span> Found ${merged.length} leads so far… (${Math.min(i + BATCH, combos.length)} of ${combos.length} searches done)</div>`;
+      if (i + BATCH < combos.length) await new Promise(r => setTimeout(r, 300));
     }
 
-    let merged = [];
-    let rawTotal = 0;
-    results.forEach(({ city, data }) => {
-      if (!data || data.error) return;
-      rawTotal += data.rawTotal || 0;
-      (data.leads || []).forEach(l => merged.push({ ...l, _city: city }));
-    });
-
-    // De-dupe in case the same business appears across overlapping city searches
-    const seen = new Set();
-    merged = merged.filter(l => {
-      if (seen.has(l.place_id)) return false;
-      seen.add(l.place_id);
-      return true;
-    });
-
-    // Combined list, sorted by score overall
-    merged.sort((a, b) => (b.score ?? 0) - (a.score ?? 0));
-
+    merged.sort((a, b) => (b.score || 0) - (a.score || 0));
     leads = merged;
-    document.getElementById('s-found').textContent = rawTotal || leads.length;
+    allLeads = [...leads];
+    document.getElementById('s-found').textContent = leads.length;
     document.getElementById('s-noweb').textContent = leads.filter(l => l.no_website).length;
     document.getElementById('s-gems').textContent = leads.filter(l => l.is_hidden_gem).length;
 
-    renderLeads(container);
+    applyFilters();
+    document.getElementById('bulk-toolbar').style.display = 'flex';
+    runAIScoring(industries.join(', '), locations.join(', '));
+
   } catch(e) {
     container.innerHTML = `<div class="empty"><p style="color:var(--danger)">Could not reach server. Is it running?</p></div>`;
   }
@@ -594,32 +733,203 @@ function renderLeads(container) {
     container.innerHTML = `<div class="empty"><p>No businesses found matching your filters. Try a broader search.</p></div>`;
     return;
   }
+  // Remember which cards are open before re-render
+  const openCards = new Set();
+  leads.forEach((l, i) => {
+    const el = document.getElementById('detail-' + i);
+    if (el && el.style.display !== 'none') openCards.add(i);
+  });
   container.innerHTML = leads.map((l, i) => `
     <div class="lead-card" id="lc-${i}" onclick="toggleDetail(${i})">
       <div class="lead-top">
-        <div>
-          <div class="lead-name">${esc(l.name)}</div>
-          <div class="lead-addr">${esc(l.address || '')}</div>
+        <div style="display:flex; align-items:flex-start; gap:10px;">
+          <input type="checkbox" class="lead-checkbox" data-i="${i}" onchange="onLeadCheck(this)" onclick="event.stopPropagation()" style="width:16px; height:16px; margin-top:3px; cursor:pointer; flex-shrink:0; accent-color:var(--accent);">
+          <div>
+            <div class="lead-name">${esc(l.name)}</div>
+            <div class="lead-addr">${esc(l.address || '')}</div>
+          </div>
         </div>
         <div style="display:flex; align-items:center; gap:8px; flex-shrink:0;">
-          ${l.score != null ? `<span class="lead-score ${l.score >= 70 ? 'score-high' : l.score >= 40 ? 'score-mid' : 'score-low'}">${l.score}/100</span>` : ''}
+          ${l.score != null ? `<span class="lead-score ${l.score >= 70 ? 'score-high' : l.score >= 40 ? 'score-mid' : 'score-low'}" title="Opportunity score — higher means weaker digital presence">${l.score}/100</span>` : ''}
         </div>
       </div>
       <div class="badges">
-        ${l._city ? `<span class="badge city-badge">${esc(l._city)}</span>` : ''}
-        ${l.no_website ? `<span class="badge b-noweb">✕ No website</span>` : ''}
-        ${l.is_hidden_gem ? `<span class="badge b-gem">◈ Hidden gem</span>` : ''}
+        ${l.no_website ? `<span class="badge b-noweb">No website</span>` : `<span class="badge b-has-site">Has website</span>`}
+        ${l.site_platform && l.site_platform !== 'unknown' ? `<span class="badge b-rank-low" style="text-transform:capitalize;">${l.site_platform} site</span>` : ''}
+        ${l.has_free_email ? `<span class="badge b-rank-low">Gmail contact</span>` : ''}
+
+        ${l.is_hidden_gem ? `<span class="badge b-gem">◈ Hidden gem — ${l.rating}★ (${l.review_count} reviews)</span>` : ''}
         ${l.rating ? `<span class="badge b-rating">★ ${l.rating} (${l.review_count})</span>` : ''}
         ${l.is_open === true ? `<span class="badge b-open">Open now</span>` : ''}
+        ${l.search_rank ? `<span class="badge ${l.in_3pack ? 'b-rank-top' : l.search_rank <= 10 ? 'b-rank-mid' : 'b-rank-low'}">${l.in_3pack ? '★ ' : ''}#${l.search_rank} on Google Maps</span>` : ''}
+
         ${pipeline.find(p => p.place_id === l.place_id) ? `<span class="badge b-saved">✓ Saved</span>` : ''}
+        ${l.last_review_time ? (() => { const days = Math.round((Date.now()/1000 - l.last_review_time)/86400); const label = days < 30 ? days + 'd ago' : days < 365 ? Math.round(days/30) + 'mo ago' : Math.round(days/365) + 'yr ago'; const cls = days < 90 ? 'b-rank-top' : days < 365 ? 'b-rank-mid' : 'b-rank-low'; return `<span class="badge ${cls}" title="Last Google review">🕐 ${label}</span>`; })() : ''}
       </div>
       <div class="lead-footer">
         <button class="btn btn-sm" onclick="event.stopPropagation(); saveLead(${i})">+ Pipeline</button>
-        <button class="btn btn-sm" onclick="event.stopPropagation(); openOutreach(${i})">Write outreach →</button>
+        <button class="btn btn-sm" onclick="event.stopPropagation(); openOutreach(${i})">Write outreach</button>
+
         ${l.phone ? `<span class="lead-phone">${esc(l.phone)}</span>` : ''}
       </div>
       <div id="detail-${i}" style="display:none;"></div>
     </div>`).join('');
+  // Restore open cards
+  openCards.forEach(i => {
+    const el = document.getElementById('detail-' + i);
+    const card = document.getElementById('lc-' + i);
+    if (el) { el.style.display = 'block'; el.innerHTML = buildDetail(leads[i]); }
+    if (card) card.classList.add('active');
+  });
+}
+
+
+
+// ─── Client-side combinable filters ──────────────────────────────────────────
+let allLeads = [];
+
+function applyFilters() {
+  const website = document.getElementById('f-website')?.value || 'all';
+  const reviews = document.getElementById('f-reviews')?.value || 'all';
+
+  const container = document.getElementById('leads-container');
+
+  leads = allLeads.filter(l => {
+    // Website filter
+    if (website === 'no_website'    && l.website)                         return false;
+    if (website === 'has_website'   && !l.website)                        return false;
+    if (website === 'wix'           && l.site_platform !== 'wix')         return false;
+    if (website === 'squarespace'   && l.site_platform !== 'squarespace') return false;
+    if (website === 'weebly'        && l.site_platform !== 'weebly')      return false;
+    if (website === 'godaddy'       && l.site_platform !== 'godaddy')     return false;
+    if (website === 'jimdo'         && l.site_platform !== 'jimdo')       return false;
+    if (website === 'any_template'  && !['wix','squarespace','weebly','godaddy','jimdo'].includes(l.site_platform)) return false;
+    if (website === 'free_email'    && !l.has_free_email)                 return false;
+    if (website === 'no_ssl'        && l.ssl !== false)                   return false;
+
+    // Reviews filter
+    const r = l.review_count || 0;
+    if (reviews === 'lt20'    && !(r < 20))         return false;
+    if (reviews === '20to50'  && !(r >= 20 && r < 50))   return false;
+    if (reviews === '50to100' && !(r >= 50 && r < 100))  return false;
+    if (reviews === '100to150'&& !(r >= 100 && r < 150)) return false;
+    if (reviews === '150to200'&& !(r >= 150 && r < 200)) return false;
+    if (reviews === '200to250'&& !(r >= 200 && r < 250)) return false;
+    if (reviews === '250to300'&& !(r >= 250 && r < 300)) return false;
+    if (reviews === 'gt300'   && !(r >= 300))        return false;
+
+    // Last review filter
+    const lastReview = document.getElementById('f-last-review')?.value || 'all';
+    if (lastReview !== 'all') {
+      const now = Date.now() / 1000; // Unix timestamp in seconds
+      const t = l.last_review_time;
+      if (!t) return false; // no review data, exclude
+      const daysAgo = (now - t) / 86400;
+      if (lastReview === '1mo'  && daysAgo > 30)  return false;
+      if (lastReview === '3mo'  && daysAgo > 90)  return false;
+      if (lastReview === '6mo'  && daysAgo > 180) return false;
+      if (lastReview === '1yr'  && daysAgo > 365) return false;
+      if (lastReview === 'old'  && daysAgo <= 365) return false;
+    }
+
+    // Rank filter — supports multiple selections
+    const selectedRanks = getSelectedRanks();
+    if (!selectedRanks.includes('all')) {
+      const rk = l.search_rank || 999;
+      const rankRanges = { '1to10':[1,10], '11to20':[11,20], '21to30':[21,30], '31to40':[31,40], '41to50':[41,50], '51to60':[51,60] };
+      const matches = selectedRanks.some(r => {
+        const range = rankRanges[r];
+        return range && rk >= range[0] && rk <= range[1];
+      });
+      if (!matches) return false;
+    }
+
+    return true;
+  });
+
+  renderLeads(container);
+  // Update stats to reflect filtered results
+  document.getElementById('s-noweb').textContent = leads.filter(l => l.no_website).length;
+  document.getElementById('s-gems').textContent  = leads.filter(l => l.is_hidden_gem).length;
+}
+
+// ─── Step 1: Get AI pitch reasons (fast) ─────────────────────────────────────
+async function runAIScoring(industry, location) {
+  try {
+    const r = await fetch('/api/score-leads', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ leads, industry, location })
+    });
+    const d = await r.json();
+    if (!d.scores) return;
+    d.scores.forEach(s => {
+      if (leads[s.i]) leads[s.i].pitch_reason = s.pitch_reason;
+    });
+    renderLeads(document.getElementById('leads-container'));
+  } catch(e) { console.log('Pitch reason fetch failed:', e.message); }
+
+  // Step 2: Run site audits in background, update scores as each one finishes
+  runSiteAudits();
+}
+
+// ─── Step 2: Background site audits — updates scores live as each finishes ───
+async function runSiteAudits() {
+  const sitesWithUrl = leads.filter(l => l.website);
+  if (!sitesWithUrl.length) return;
+
+  // Run 3 at a time
+  const BATCH = 3;
+  for (let i = 0; i < sitesWithUrl.length; i += BATCH) {
+    const batch = sitesWithUrl.slice(i, i + BATCH);
+    await Promise.allSettled(batch.map(async (lead) => {
+      try {
+        const r = await fetch('/api/site-audit?url=' + encodeURIComponent(lead.website) + '&place_id=' + encodeURIComponent(lead.place_id));
+        const d = await r.json();
+        const idx = leads.findIndex(l => l.place_id === lead.place_id);
+        if (idx === -1) return;
+        leads[idx].psi = d.psi;
+        leads[idx].ssl = d.ssl;
+        leads[idx].site_platform = d.site_platform;
+        leads[idx].has_free_email = d.has_free_email;
+        leads[idx].site_audited = true;
+        // Mirror server scoring logic exactly
+        let score = 0;
+        // Website quality (0-50)
+        const platforms = {wix:38, squarespace:35, weebly:38, godaddy:36, jimdo:37};
+        let webScore = platforms[d.site_platform] || 18;
+        if (d.psi) {
+          if (!d.psi.mobile_friendly)                   webScore += 7;
+          if (d.psi.performance < 40)                   webScore += 7;
+          else if (d.psi.performance < 65)              webScore += 3;
+          if (d.psi.seo < 50)                           webScore += 7;
+          else if (d.psi.seo < 75)                      webScore += 3;
+          if (d.psi.best_practices < 50)                webScore += 4;
+          if (d.psi.performance >= 80 && d.psi.seo >= 80 && d.psi.mobile_friendly) {
+            webScore = Math.max(webScore - 12, 2);
+          }
+        }
+        if (d.ssl === false)         webScore += 6;
+        if (d.has_free_email)        webScore += 5;
+        score += Math.min(webScore, 50);
+        // Rank tiebreaker (0-35)
+        const rank = Math.min(Math.max(leads[idx].search_rank || 60, 1), 60);
+        score += Math.round(((rank - 1) / 59) * 33) + 2;
+        // Social (0-15)
+        const reviews = leads[idx].review_count || 0;
+        if (reviews < 5)        score += 15;
+        else if (reviews < 15)  score += 10;
+        else if (reviews < 30)  score += 6;
+        else if (reviews < 75)  score += 3;
+        else if (reviews < 150) score += 1;
+        leads[idx].score = Math.min(Math.max(Math.round(score), 0), 100);
+        leads[idx].base_score = Math.round(((rank-1)/59)*33)+2;
+        // Re-sort and re-render after each update
+        leads.sort((a, b) => (b.score || 0) - (a.score || 0));
+        renderLeads(document.getElementById('leads-container'));
+      } catch(e) { console.log('Site audit failed for', lead.name, e.message); }
+    }));
+  }
 }
 
 function toggleDetail(i) {
@@ -629,39 +939,77 @@ function toggleDetail(i) {
     el.style.display = 'block';
     el.innerHTML = buildDetail(leads[i]);
     card.classList.add('active');
+
   } else {
     el.style.display = 'none';
     card.classList.remove('active');
   }
 }
 
+
+
 function buildDetail(l) {
   const types = (l.types || []).filter(t => !['establishment','point_of_interest'].includes(t)).join(', ');
   return `<div class="detail-drawer">
     <h3>${esc(l.name)}</h3>
     <div class="detail-sub">${esc(l.address || '')}</div>
-    ${l.no_website ? `<div class="opportunity">🎯 This business has no website — a direct opportunity to pitch your services.</div>` : ''}
+
+    ${l.pitch_reason ? `<div class="opportunity">${esc(l.pitch_reason)}</div>` : l.no_website ? `<div class="opportunity">No website — direct opportunity to pitch your services.</div>` : `<div class="opportunity" style="border-color:rgba(245,158,11,0.2);color:var(--warn);">Has website but ranks #${l.search_rank} on Google Maps — low visibility.</div>`}
+    ${l.is_hidden_gem ? `<div class="opportunity" style="border-color:rgba(167,139,250,0.3); color:var(--purple);">◈ Hidden gem — ${l.rating} stars with only ${l.review_count} reviews. Well-loved locally but customers can't find them online. Easy close.</div>` : ''}
+    ${l.score_breakdown ? `<div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px;">
+      ${Object.entries(l.score_breakdown).map(([k,v]) => `<span style="font-size:11px; background:var(--bg3); padding:3px 8px; border-radius:20px; color:${v<=30?'#f87171':v<=60?'var(--warn)':'var(--accent)'};">${k.replace(/_/g,' ')}: ${v}</span>`).join('')}
+    </div>` : ''}
     <div class="detail-grid">
       <div class="detail-row"><div class="detail-key">Phone</div><div class="detail-val">${l.phone || '—'}</div></div>
       <div class="detail-row"><div class="detail-key">Rating</div><div class="detail-val">${l.rating ? `★ ${l.rating} &nbsp;·&nbsp; ${l.review_count} reviews` : '—'}</div></div>
-      <div class="detail-row"><div class="detail-key">Website</div><div class="detail-val">${l.website ? `<a href="${esc(l.website)}" target="_blank">${esc(l.website)}</a>` : '<span style="color:var(--danger)">None</span>'}</div></div>
+      <div class="detail-row"><div class="detail-key">Website</div><div class="detail-val">${l.website ? `<a href="${esc(l.website)}" target="_blank">${esc(l.website)}</a>` : '<span style="color:var(--danger)">None</span>'}${l.site_platform && l.site_platform !== 'unknown' ? ` <span style="font-size:11px; color:var(--warn); text-transform:capitalize;">(${l.site_platform} template)</span>` : ''}</div></div>
+      ${l.has_free_email ? `<div class="detail-row"><div class="detail-key">Email</div><div class="detail-val" style="color:var(--warn);">Uses Gmail — unprofessional signal</div></div>` : ''}
       <div class="detail-row"><div class="detail-key">Google Maps</div><div class="detail-val"><a href="${esc(l.google_maps_url || '#')}" target="_blank">View on Maps ↗</a></div></div>
       <div class="detail-row"><div class="detail-key">Category</div><div class="detail-val">${types || '—'}</div></div>
+      <div class="detail-row"><div class="detail-key">Google Maps rank</div><div class="detail-val" style="color:${l.in_3pack ? 'var(--accent)' : l.search_rank <= 10 ? 'var(--warn)' : '#f87171'}">${l.search_rank ? '#' + l.search_rank + ' — ' + l.rank_label : '—'}</div></div>
+
       <div class="detail-row"><div class="detail-key">Status</div><div class="detail-val">${l.business_status || 'Operational'}</div></div>
     </div>
     <div>
       <div class="detail-key" style="margin-bottom:5px;">Opportunity score</div>
-      <div style="font-size:13px; margin-bottom:4px;">${l.score ?? '?'} / 100</div>
+      <div style="font-size:28px; font-weight:600; margin-bottom:4px; color:${(l.score||0)>=70?'var(--accent)':(l.score||0)>=40?'var(--warn)':'#f87171'}">${l.score ?? '?'}<span style="font-size:13px; color:var(--muted); font-weight:400"> / 100</span></div>
       <div class="score-bar-wrap"><div class="score-bar" style="width:${l.score ?? 0}%"></div></div>
+      <div style="font-size:11px; color:var(--muted2); margin-top:6px;">Google Maps rank #${l.search_rank || '?'} of 60 &nbsp;·&nbsp; rank score: ${l.base_score || '?'}/35 &nbsp;·&nbsp; ${l.site_audited ? 'website audit complete' : l.website ? 'auditing website...' : 'no website'}</div>
+      ${l.psi ? `<div style="display:flex; gap:12px; flex-wrap:wrap; margin-top:10px; font-size:12px;">
+        <span style="color:var(--muted)">Mobile speed: <strong style="color:${l.psi.performance>=75?'var(--accent)':l.psi.performance>=50?'var(--warn)':'#f87171'}">${l.psi.performance}/100</strong></span>
+        <span style="color:var(--muted)">SEO: <strong style="color:${l.psi.seo>=75?'var(--accent)':l.psi.seo>=50?'var(--warn)':'#f87171'}">${l.psi.seo}/100</strong></span>
+        <span style="color:var(--muted)">Best practices: <strong style="color:${l.psi.best_practices>=75?'var(--accent)':l.psi.best_practices>=50?'var(--warn)':'#f87171'}">${l.psi.best_practices}/100</strong></span>
+        <span style="color:var(--muted)">Mobile-friendly: <strong style="color:${l.psi.mobile_friendly?'var(--accent)':'#f87171'}">${l.psi.mobile_friendly?'Yes':'No'}</strong></span>
+        <span style="color:var(--muted)">SSL: <strong style="color:${l.ssl?'var(--accent)':'#f87171'}">${l.ssl?'Secure':'Missing'}</strong></span>
+      </div>` : ''}
+      ${l.psi && l.psi.issues && l.psi.issues.length > 0 ? `<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;">${l.psi.issues.map(iss=>'<span class=\"issue-tag\">' + esc(iss) + '</span>').join('')}</div>` : ''}
     </div>
+    ${l.website && l.website_grade ? `
+    <div style="margin-top:14px;">
+      <div class="detail-key" style="margin-bottom:8px;">Website Quality Report</div>
+      <div class="web-check-row">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
+          <span style="font-size:13px; font-weight:600;">Overall Grade</span>
+          <span style="font-size:22px; font-weight:700; color:${{'A':'var(--accent)','B':'#60a5fa','C':'var(--warn)','D':'#f87171','F':'#ef4444'}[l.website_grade] || 'var(--muted)'};">${l.website_grade}</span>
+        </div>
+        <div style="display:flex; gap:14px; flex-wrap:wrap; font-size:12px;">
+          <span style="color:var(--muted)">SSL: <strong style="color:${l.website_ssl ? 'var(--accent)' : '#f87171'}">${l.website_ssl ? 'Secure' : 'Missing'}</strong></span>
+          ${l.seo_score !== null && l.seo_score !== undefined ? `<span style="color:var(--muted)">SEO score: <strong style="color:${l.seo_score>=75?'var(--accent)':l.seo_score>=50?'var(--warn)':'#f87171'}">${l.seo_score}/100</strong></span>` : ''}
+          <span style="color:var(--muted)">Mobile speed: <strong style="color:${(l.website_mobile_score||0)>=75?'var(--accent)':(l.website_mobile_score||0)>=50?'var(--warn)':'#f87171'}">${l.website_mobile_score !== null && l.website_mobile_score !== undefined ? l.website_mobile_score+'/100' : 'N/A'}</strong></span>
+          ${l.website_domain_age !== null && l.website_domain_age !== undefined ? `<span style="color:var(--muted)">Age: <strong style="color:${l.website_domain_age>=12?'#f87171':'var(--text)'}">${l.website_domain_age} yrs</strong></span>` : ''}
+        </div>
+        ${l.website_issues && l.website_issues.length > 0 ? '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;">' + (l.website_issues||[]).map(iss => '<span class=\"issue-tag\">' + esc(iss) + '</span>').join('') + '</div>' : '<div style="margin-top:6px;font-size:12px;color:var(--accent);">No major issues</div>'}
+        ${l.website_issues && l.website_issues.length > 0 ? '<div style="margin-top:8px;font-size:11px;color:var(--muted);">Use these issues in your pitch — show them what is broken before offering to fix it.</div>' : ''}
+      </div>
+    </div>` : ''}
   </div>`;
 }
 
 // ─── Pipeline ──────────────────────────────────────────────────────────────
 async function loadPipeline() {
   try {
-    const r = await fetch(API + '/api/pipeline');
-    pipeline = await r.json();
+    const stored = localStorage.getItem('leadminer-pipeline');
+    pipeline = stored ? JSON.parse(stored) : [];
     updatePipelineCount();
   } catch { pipeline = []; }
 }
@@ -669,13 +1017,28 @@ async function loadPipeline() {
 async function saveLead(i) {
   const l = leads[i];
   if (pipeline.find(p => p.place_id === l.place_id)) return;
-  await fetch(API + '/api/pipeline', {
-    method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(l)
-  });
-  await loadPipeline();
-  document.getElementById('s-pipe').textContent = pipeline.length;
+  pipeline.push({ ...l, status: 'new', added: new Date().toISOString() });
+  localStorage.setItem('leadminer-pipeline', JSON.stringify(pipeline));
+  updatePipelineCount();
   renderLeads(document.getElementById('leads-container'));
+}
+
+async function addSelectedToPipeline() {
+  const checkboxes = document.querySelectorAll('.lead-checkbox:checked');
+  if (!checkboxes.length) { alert('Select at least one lead first.'); return; }
+  let added = 0;
+  checkboxes.forEach(cb => {
+    const i = parseInt(cb.dataset.i);
+    const l = leads[i];
+    if (l && !pipeline.find(p => p.place_id === l.place_id)) {
+      pipeline.push({ ...l, status: 'new', added: new Date().toISOString() });
+      added++;
+    }
+  });
+  localStorage.setItem('leadminer-pipeline', JSON.stringify(pipeline));
+  updatePipelineCount();
+  renderLeads(document.getElementById('leads-container'));
+  clearSelection();
 }
 
 function updatePipelineCount() {
@@ -685,16 +1048,17 @@ function updatePipelineCount() {
 }
 
 async function updateStatus(placeId, status) {
-  await fetch(API + '/api/pipeline/' + encodeURIComponent(placeId), {
-    method: 'PATCH', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ status })
-  });
-  await loadPipeline();
+  const idx = pipeline.findIndex(l => l.place_id === placeId);
+  if (idx !== -1) {
+    pipeline[idx].status = status;
+    localStorage.setItem('leadminer-pipeline', JSON.stringify(pipeline));
+  }
 }
 
 async function removePipeline(placeId) {
-  await fetch(API + '/api/pipeline/' + encodeURIComponent(placeId), { method: 'DELETE' });
-  await loadPipeline();
+  pipeline = pipeline.filter(l => l.place_id !== placeId);
+  localStorage.setItem('leadminer-pipeline', JSON.stringify(pipeline));
+  updatePipelineCount();
   renderPipeline();
 }
 
@@ -756,11 +1120,12 @@ function closeNotes() {
 async function saveNote() {
   const text = document.getElementById('notes-input').value.trim();
   if (!text || !notesLead) return;
-  await fetch(API + '/api/pipeline/' + encodeURIComponent(notesLead.place_id) + '/notes', {
-    method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ text })
-  });
-  await loadPipeline();
+  const idx = pipeline.findIndex(l => l.place_id === notesLead.place_id);
+  if (idx !== -1) {
+    const note = { text, ts: new Date().toISOString() };
+    pipeline[idx].notes = [...(pipeline[idx].notes || []), note];
+    localStorage.setItem('leadminer-pipeline', JSON.stringify(pipeline));
+  }
   closeNotes();
   renderPipeline();
 }
@@ -786,11 +1151,9 @@ function setOutreachType(btn) {
 function openOutreach(i) {
   const lead = leads[i];
   if (!pipeline.find(p => p.place_id === lead.place_id)) {
-    // Auto-save
-    fetch(API + '/api/pipeline', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(lead)
-    }).then(() => loadPipeline());
+    pipeline.push({ ...lead, status: 'new', added: new Date().toISOString() });
+    localStorage.setItem('leadminer-pipeline', JSON.stringify(pipeline));
+    updatePipelineCount();
   }
   currentLead = lead;
   showPage('outreach', document.querySelectorAll('.nav-item')[2]);
@@ -847,6 +1210,370 @@ function copyScript() {
 // ─── Utils ─────────────────────────────────────────────────────────────────
 function esc(s) {
   return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+async function checkWebsite(i) {
+  const l = leads[i];
+  if (!l.website) return;
+  const detailEl = document.getElementById('detail-' + i);
+  if (!detailEl || detailEl.style.display === 'none') toggleDetail(i);
+  const safeId = l.place_id.replace(/[^a-z0-9]/gi, '_');
+  let checkEl = document.getElementById('wc-' + safeId);
+  if (!checkEl) {
+    const detailEl2 = document.getElementById('detail-' + i);
+    if (detailEl2) {
+      const div = document.createElement('div');
+      div.id = 'wc-' + safeId;
+      detailEl2.querySelector('.detail-drawer').appendChild(div);
+      checkEl = div;
+    }
+  }
+  if (checkEl) checkEl.innerHTML = '<div style="margin-top:12px;font-size:13px;color:var(--muted);display:flex;align-items:center;gap:8px;"><span class=\"spinner\"></span> Checking website quality...</div>';
+  try {
+    const r = await fetch('/api/website-check?url=' + encodeURIComponent(l.website));
+    const d = await r.json();
+    leads[i].website_grade = d.grade;
+    const gradeColors = {A:'var(--accent)',B:'#60a5fa',C:'var(--warn)',D:'#f87171',F:'#ef4444'};
+    const gc = gradeColors[d.grade] || 'var(--muted)';
+    const issuesHtml = (d.issues||[]).map(iss => '<span class=\"issue-tag\">' + esc(iss) + '</span>').join('');
+    const html = '<div class=\"web-check-row\">'
+      + '<div style=\"display:flex;align-items:center;justify-content:space-between;\">'
+      + '<span style=\"font-weight:600;\">Website Quality Report</span>'
+      + '<span style=\"font-size:20px;font-weight:700;color:' + gc + '\">Grade: ' + d.grade + '</span>'
+      + '</div>'
+      + '<div style=\"display:flex;gap:16px;margin-top:8px;flex-wrap:wrap;\">'
+      + '<span style=\"color:var(--muted)\">SSL: <strong style=\"color:' + (d.ssl ? 'var(--accent)' : '#f87171') + '\">' + (d.ssl ? 'Secure' : 'Missing') + '</strong></span>'
+      + '<span style=\"color:var(--muted)\">Mobile speed: <strong style=\"color:' + ((d.mobile_score||0)>=75?'var(--accent)':(d.mobile_score||0)>=50?'var(--warn)':'#f87171') + '\">' + (d.mobile_score !== null ? d.mobile_score + '/100' : 'N/A') + '</strong></span>'
+      + (d.domain_age_years !== null ? '<span style=\"color:var(--muted)\">Domain age: <strong>' + d.domain_age_years + ' years</strong></span>' : '')
+      + (d.domain_registered ? '<span style=\"color:var(--muted)\">Registered: <strong>' + d.domain_registered + '</strong></span>' : '')
+      + '</div>'
+      + (issuesHtml ? '<div style=\"display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;\">' + issuesHtml + '</div>' : '<div style=\"margin-top:6px;color:var(--accent);font-size:12px;\">No major issues found</div>')
+      + (d.issues && d.issues.length ? '<div style=\"margin-top:8px;font-size:12px;color:var(--muted)\">Tip: Use these issues in your pitch — show them what is wrong before offering to fix it.</div>' : '')
+      + '</div>';
+    if (checkEl) checkEl.innerHTML = html;
+    renderLeads(document.getElementById('leads-container'));
+  } catch(e) {
+    if (checkEl) checkEl.innerHTML = '<div style=\"margin-top:8px;font-size:12px;color:var(--danger)\">Could not check website.</div>';
+  }
+}
+
+// ─── Selection & CSV Export ───────────────────────────────────────────────────
+let selectedIndices = new Set();
+
+function onLeadCheck(cb) {
+  const i = parseInt(cb.dataset.i);
+  if (cb.checked) selectedIndices.add(i);
+  else selectedIndices.delete(i);
+  updateSelectionUI();
+}
+
+function toggleSelectAll(cb) {
+  selectedIndices.clear();
+  if (cb.checked) {
+    leads.forEach((l, i) => selectedIndices.add(i));
+  }
+  // Re-render to update checkboxes
+  renderLeads(document.getElementById('leads-container'));
+  updateSelectionUI();
+}
+
+function clearSelection() {
+  selectedIndices.clear();
+  document.getElementById('select-all').checked = false;
+  renderLeads(document.getElementById('leads-container'));
+  updateSelectionUI();
+}
+
+function updateSelectionUI() {
+  const count = selectedIndices.size;
+  const toolbar = document.getElementById('bulk-toolbar');
+  const countEl = document.getElementById('selected-count');
+  toolbar.style.display = 'flex';
+  countEl.textContent = count + ' selected';
+  // Update all checkboxes to match selectedIndices
+  document.querySelectorAll('.lead-checkbox').forEach(cb => {
+    cb.checked = selectedIndices.has(parseInt(cb.dataset.i));
+  });
+  const allChecked = leads.length > 0 && selectedIndices.size === leads.length;
+  document.getElementById('select-all').checked = allChecked;
+}
+
+// ─── Format phone to E.164 for GoHighLevel (+1XXXXXXXXXX) ──────────────────────
+function formatPhone(phone) {
+  if (!phone) return '';
+  const digits = phone.replace(/\D/g, '');
+  if (digits.length === 10) return '+1' + digits;
+  if (digits.length === 11 && digits[0] === '1') return '+' + digits;
+  return phone; // return as-is if can't parse
+}
+
+function exportPipelineCSV() {
+  if (!pipeline.length) { alert('Your pipeline is empty.'); return; }
+  const headers = ['First Name','Last Name','Phone','Email','Address','City','State','Website','Website Status','Site Platform','Google Maps Rank','Rating','Reviews','Status','No Website','Hidden Gem','Opportunity Score','Pitch Reason','Call Script Notes','Notes','Tags','Lead Source','Business Type','Added','Google Maps URL'];
+  const rows = pipeline.map(l => {
+    const nameParts = (l.name || '').split(' ');
+    const firstName = nameParts[0] || l.name || '';
+    const lastName = nameParts.slice(1).join(' ') || '';
+    const addrParts = (l.address || '').split(',');
+    const street = addrParts[0]?.trim() || '';
+    const city = addrParts[1]?.trim() || '';
+    const state = addrParts[2]?.trim()?.split(' ')[0] || '';
+    const tags = [
+      l.no_website ? 'no-website' : 'has-website',
+      l.is_hidden_gem ? 'hidden-gem' : '',
+      l.in_3pack ? 'top-3-maps' : '',
+      l.site_platform && l.site_platform !== 'unknown' ? l.site_platform + '-site' : '',
+      (l.score || 0) >= 70 ? 'high-opportunity' : (l.score || 0) >= 40 ? 'mid-opportunity' : 'low-opportunity',
+      l.search_rank <= 10 ? 'rank-1-10' : l.search_rank <= 20 ? 'rank-11-20' : l.search_rank <= 40 ? 'rank-21-40' : 'rank-41-60',
+      'pipeline-' + (l.status || 'new'),
+    ].filter(Boolean).join(';');
+    const callNotes = l.pitch_reason ? 'PITCH: ' + l.pitch_reason + ' | Google Maps: ' + (l.google_maps_url || '') : '';
+    const websiteStatus = l.no_website ? 'No Website' : l.site_platform && l.site_platform !== 'unknown' ? (l.site_platform.charAt(0).toUpperCase() + l.site_platform.slice(1)) + ' Template' : 'Has Website';
+    return [
+      firstName,
+      lastName,
+      formatPhone(l.phone),
+      '',
+      street,
+      city,
+      state,
+      l.website || '',
+      websiteStatus,
+      l.site_platform && l.site_platform !== 'unknown' ? l.site_platform : '',
+      l.search_rank || '',
+      l.rating || '',
+      l.review_count || '',
+      l.status || 'new',
+      l.no_website ? 'Yes' : 'No',
+      l.is_hidden_gem ? 'Yes' : 'No',
+      l.score || '',
+      l.pitch_reason || '',
+      callNotes,
+      (l.notes || []).map(n => n.text).join(' | '),
+      tags,
+      'Lead Radar',
+      (l.types || []).filter(t => !['establishment','point_of_interest'].includes(t))[0] || '',
+      l.added ? new Date(l.added).toLocaleDateString() : '',
+      l.google_maps_url || ''
+    ].map(v => '"' + String(v).replace(/"/g, '""') + '"');
+  });
+
+  const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'leadminer-pipeline-' + new Date().toISOString().slice(0,10) + '.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function exportCSV() {
+  const selected = [...selectedIndices].map(i => leads[i]).filter(Boolean);
+  if (!selected.length) { alert('Select at least one lead first.'); return; }
+
+  const headers = ['First Name','Last Name','Phone','Email','Address','City','State','Website','Website Status','Site Platform','Google Maps Rank','Rating','Reviews','No Website','Hidden Gem','In Top 3','Opportunity Score','Pitch Reason','Call Script Notes','Tags','Lead Source','Business Type','Google Maps URL'];
+  const rows = selected.map(l => {
+    const nameParts = (l.name || '').split(' ');
+    const firstName = nameParts[0] || l.name || '';
+    const lastName = nameParts.slice(1).join(' ') || '';
+    const addrParts = (l.address || '').split(',');
+    const street = addrParts[0]?.trim() || '';
+    const city = addrParts[1]?.trim() || '';
+    const state = addrParts[2]?.trim()?.split(' ')[0] || '';
+    const tags = [
+      l.no_website ? 'no-website' : 'has-website',
+      l.is_hidden_gem ? 'hidden-gem' : '',
+      l.in_3pack ? 'top-3-maps' : '',
+      l.site_platform && l.site_platform !== 'unknown' ? l.site_platform + '-site' : '',
+      (l.score || 0) >= 70 ? 'high-opportunity' : (l.score || 0) >= 40 ? 'mid-opportunity' : 'low-opportunity',
+      l.search_rank <= 10 ? 'rank-1-10' : l.search_rank <= 20 ? 'rank-11-20' : l.search_rank <= 40 ? 'rank-21-40' : 'rank-41-60',
+    ].filter(Boolean).join(';');
+    const callNotes = l.pitch_reason ? 'PITCH: ' + l.pitch_reason + ' | Google Maps: ' + (l.google_maps_url || '') : '';
+    const websiteStatus = l.no_website ? 'No Website' : l.site_platform && l.site_platform !== 'unknown' ? (l.site_platform.charAt(0).toUpperCase() + l.site_platform.slice(1)) + ' Template' : 'Has Website';
+    return [
+      firstName,
+      lastName,
+      formatPhone(l.phone),
+      '',
+      street,
+      city,
+      state,
+      l.website || '',
+      websiteStatus,
+      l.site_platform && l.site_platform !== 'unknown' ? l.site_platform : '',
+      l.search_rank || '',
+      l.rating || '',
+      l.review_count || '',
+      l.no_website ? 'Yes' : 'No',
+      l.is_hidden_gem ? 'Yes' : 'No',
+      l.in_3pack ? 'Yes' : 'No',
+      l.score || '',
+      l.pitch_reason || '',
+      callNotes,
+      tags,
+      'Lead Radar',
+      (l.types || []).filter(t => !['establishment','point_of_interest'].includes(t))[0] || '',
+      l.google_maps_url || ''
+    ].map(v => '"' + String(v).replace(/"/g, '""') + '"');
+  });
+
+  const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'leadminer-export-' + new Date().toISOString().slice(0,10) + '.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ─── Multi-industry selection ─────────────────────────────────────────────────
+let selectedIndustries = [];
+
+const ALL_INDUSTRIES = ["Plumbers","Electricians","HVAC","Roofers","Painters","Landscapers","General Contractors","Handyman Services","Cleaning Services","Pest Control","Pool Services","Garage Door Repair","Flooring","Window Cleaning","Restaurants","Bakeries","Coffee Shops","Food Trucks","Catering Services","Bars","Hair Salons","Barbershops","Nail Salons","Spas","Massage Therapy","Tattoo Shops","Med Spas","Dentists","Chiropractors","Optometrists","Physical Therapy","Veterinarians","Gyms","Personal Trainers","Auto Repair","Auto Body Shops","Car Detailing","Towing","Accountants","Lawyers","Real Estate Agents","Insurance Agents","Photographers","Wedding Planners","Florists","Pet Grooming","Tutoring","Daycare Centers","Moving Companies","Junk Removal"];
+
+function selectAllIndustries() {
+  selectedIndustries = [...ALL_INDUSTRIES];
+  renderIndustryTags();
+}
+
+function handleIndustryKey(e) {
+  const input = document.getElementById('q-industry');
+  const val = input.value.trim();
+  if ((e.key === 'Enter' || e.key === ',') && val) {
+    e.preventDefault();
+    addIndustryTag(val);
+    input.value = '';
+  } else if (e.key === 'Backspace' && !val && selectedIndustries.length) {
+    removeIndustryTag(selectedIndustries.length - 1);
+  }
+}
+
+// Also add tag when user picks from datalist
+document.addEventListener('DOMContentLoaded', () => {
+  const input = document.getElementById('q-industry');
+  if (input) {
+    input.addEventListener('change', () => {
+      const val = input.value.trim();
+      if (val) { addIndustryTag(val); input.value = ''; }
+    });
+  }
+  const locInput = document.getElementById('q-location');
+  if (locInput) {
+    locInput.addEventListener('change', () => {
+      const val = locInput.value.trim();
+      if (val) { addLocationTag(val); locInput.value = ''; }
+    });
+  }
+});
+
+function addIndustryTag(val) {
+  if (!val || selectedIndustries.includes(val)) return;
+  selectedIndustries.push(val);
+  renderIndustryTags();
+}
+
+function removeIndustryTag(i) {
+  selectedIndustries.splice(i, 1);
+  renderIndustryTags();
+}
+
+function renderIndustryTags() {
+  const container = document.getElementById('industry-tags');
+  const input = document.getElementById('q-industry');
+  container.querySelectorAll('.industry-tag').forEach(t => t.remove());
+  selectedIndustries.forEach((ind, i) => {
+    const tag = document.createElement('span');
+    tag.className = 'industry-tag';
+    tag.style.cssText = 'background:var(--accent); color:#000; font-size:12px; padding:2px 8px; border-radius:20px; display:flex; align-items:center; gap:4px; white-space:nowrap; font-weight:500;';
+    tag.innerHTML = esc(ind) + '<span onclick="removeIndustryTag(' + i + ')" style="cursor:pointer; font-size:14px; line-height:1;">×</span>';
+    container.insertBefore(tag, input);
+  });
+  input.placeholder = selectedIndustries.length ? 'Add more...' : 'Add industry...';
+}
+
+// ─── Multi-location selection ─────────────────────────────────────────────────
+let selectedLocations = [];
+
+function handleLocationKey(e) {
+  const input = document.getElementById('q-location');
+  const val = input.value.trim();
+  if ((e.key === 'Enter' || e.key === ',') && val) {
+    e.preventDefault();
+    addLocationTag(val);
+    input.value = '';
+  } else if (e.key === 'Backspace' && !val && selectedLocations.length) {
+    removeLocationTag(selectedLocations.length - 1);
+  }
+}
+
+function addLocationTag(val) {
+  if (!val || selectedLocations.includes(val)) return;
+  selectedLocations.push(val);
+  renderLocationTags();
+}
+
+function removeLocationTag(i) {
+  selectedLocations.splice(i, 1);
+  renderLocationTags();
+}
+
+function renderLocationTags() {
+  const container = document.getElementById('location-tags');
+  const input = document.getElementById('q-location');
+  container.querySelectorAll('.location-tag').forEach(t => t.remove());
+  selectedLocations.forEach((loc, i) => {
+    const tag = document.createElement('span');
+    tag.className = 'location-tag';
+    tag.style.cssText = 'background:var(--info); color:#fff; font-size:12px; padding:2px 8px; border-radius:20px; display:flex; align-items:center; gap:4px; white-space:nowrap; font-weight:500;';
+    tag.innerHTML = esc(loc) + '<span onclick="removeLocationTag(' + i + ')" style="cursor:pointer; font-size:14px; line-height:1;">×</span>';
+    container.insertBefore(tag, input);
+  });
+  input.placeholder = selectedLocations.length ? 'Add more...' : 'Add city...';
+}
+
+// ─── Multi-rank filter ────────────────────────────────────────────────────────
+function toggleRankDropdown() {
+  const dd = document.getElementById('rank-dropdown');
+  dd.style.display = dd.style.display === 'none' ? 'block' : 'none';
+}
+
+// Close dropdown when clicking outside
+document.addEventListener('click', e => {
+  const btn = document.getElementById('rank-btn');
+  const dd = document.getElementById('rank-dropdown');
+  if (dd && btn && !btn.contains(e.target) && !dd.contains(e.target)) {
+    dd.style.display = 'none';
+  }
+});
+
+function rankAllChanged(cb) {
+  if (cb.checked) {
+    document.querySelectorAll('.rank-cb').forEach(c => c.checked = false);
+  }
+  updateRankLabel();
+  applyFilters();
+}
+
+function rankCbChanged() {
+  const any = document.querySelectorAll('.rank-cb:checked').length === 0;
+  document.getElementById('rank-all').checked = any;
+  updateRankLabel();
+  applyFilters();
+}
+
+function updateRankLabel() {
+  const checked = [...document.querySelectorAll('.rank-cb:checked')].map(c => c.value);
+  const label = document.getElementById('rank-btn-label');
+  if (!checked.length) { label.textContent = 'Any rank'; return; }
+  const names = { '1to10':'#1–10', '11to20':'#11–20', '21to30':'#21–30', '31to40':'#31–40', '41to50':'#41–50', '51to60':'#51–60' };
+  label.textContent = checked.map(v => names[v]).join(', ');
+}
+
+function getSelectedRanks() {
+  const checked = [...document.querySelectorAll('.rank-cb:checked')].map(c => c.value);
+  return checked.length ? checked : ['all'];
 }
 
 init();
