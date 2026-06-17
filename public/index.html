@@ -512,6 +512,18 @@
             <option value="no">No phone number</option>
           </select>
         </div>
+        <div class="field" style="flex:1; min-width:140px;">
+          <label>Last Review</label>
+          <select id="p-last-review" onchange="renderPipeline()">
+            <option value="all">Any time</option>
+            <option value="1mo">Within 1 month</option>
+            <option value="3mo">Within 3 months</option>
+            <option value="6mo">Within 6 months</option>
+            <option value="1yr">Within 1 year</option>
+            <option value="old">1+ years ago</option>
+            <option value="none">No review data</option>
+          </select>
+        </div>
         <div class="field" style="flex:1; min-width:130px;">
           <label>Sort by</label>
           <select id="p-sort" onchange="renderPipeline()">
@@ -520,6 +532,8 @@
             <option value="score_desc">Score: high to low</option>
             <option value="score_asc">Score: low to high</option>
             <option value="name">Name (A–Z)</option>
+            <option value="review_desc">Most recent review</option>
+            <option value="review_asc">Oldest review</option>
           </select>
         </div>
         <div class="field" style="flex:0;">
@@ -1042,7 +1056,9 @@ function getFilteredPipeline() {
   const status = document.getElementById('p-status')?.value || 'all';
   const scoreFilter = document.getElementById('p-score')?.value || 'all';
   const phoneFilter = document.getElementById('p-phone')?.value || 'all';
+  const lastReviewFilter = document.getElementById('p-last-review')?.value || 'all';
   const sort = document.getElementById('p-sort')?.value || 'added_desc';
+  const now = Date.now() / 1000; // Unix seconds
 
   let list = pipeline.filter(l => {
     if (search) {
@@ -1056,6 +1072,20 @@ function getFilteredPipeline() {
     if (scoreFilter === 'low' && s >= 40) return false;
     if (phoneFilter === 'yes' && !l.phone) return false;
     if (phoneFilter === 'no' && l.phone) return false;
+    if (lastReviewFilter !== 'all') {
+      const t = l.last_review_time;
+      if (lastReviewFilter === 'none') {
+        if (t) return false;
+      } else {
+        if (!t) return false; // no review data, exclude from time-bound filters
+        const daysAgo = (now - t) / 86400;
+        if (lastReviewFilter === '1mo' && daysAgo > 30)  return false;
+        if (lastReviewFilter === '3mo' && daysAgo > 90)  return false;
+        if (lastReviewFilter === '6mo' && daysAgo > 180) return false;
+        if (lastReviewFilter === '1yr' && daysAgo > 365) return false;
+        if (lastReviewFilter === 'old' && daysAgo <= 365) return false;
+      }
+    }
     return true;
   });
 
@@ -1065,6 +1095,9 @@ function getFilteredPipeline() {
     if (sort === 'score_desc') return (b.score||0) - (a.score||0);
     if (sort === 'score_asc')  return (a.score||0) - (b.score||0);
     if (sort === 'name')       return (a.name||'').localeCompare(b.name||'');
+    // Leads with no review data sort to the end regardless of direction
+    if (sort === 'review_desc') return (b.last_review_time || 0) - (a.last_review_time || 0);
+    if (sort === 'review_asc')  return (a.last_review_time || Infinity) - (b.last_review_time || Infinity);
     return 0;
   });
 
@@ -1076,6 +1109,7 @@ function resetPipelineFilters() {
   document.getElementById('p-status').value = 'all';
   document.getElementById('p-score').value = 'all';
   document.getElementById('p-phone').value = 'all';
+  document.getElementById('p-last-review').value = 'all';
   document.getElementById('p-sort').value = 'added_desc';
   renderPipeline();
 }
@@ -1083,6 +1117,14 @@ function resetPipelineFilters() {
 function callHref(phone) {
   if (!phone) return null;
   return 'tel:' + phone.replace(/[^\d+]/g, '');
+}
+
+function lastReviewBadge(l) {
+  if (!l.last_review_time) return '<span class="notes-mini" style="color:var(--muted2);">No review data</span>';
+  const days = Math.round((Date.now()/1000 - l.last_review_time) / 86400);
+  const label = days < 30 ? days + 'd ago' : days < 365 ? Math.round(days/30) + 'mo ago' : Math.round(days/365) + 'yr ago';
+  const cls = days < 90 ? 'b-rank-top' : days < 365 ? 'b-rank-mid' : 'b-rank-low';
+  return `<span class="badge ${cls}" title="Last Google review">🕐 ${label}</span>`;
 }
 
 function renderPipeline() {
@@ -1116,7 +1158,7 @@ function renderPipeline() {
 
   // Desktop table view
   const tableHtml = `<div class="table-wrap"><table class="pipeline-table">
-    <thead><tr><th>Business</th><th>Rating</th><th>Score</th><th>Status</th><th>Added</th><th></th><th></th></tr></thead>
+    <thead><tr><th>Business</th><th>Rating</th><th>Score</th><th>Last Review</th><th>Status</th><th>Added</th><th></th><th></th></tr></thead>
     <tbody>${filtered.map(l => `
     <tr>
       <td>
@@ -1126,6 +1168,7 @@ function renderPipeline() {
       </td>
       <td>${l.rating ? `★ ${l.rating}` : '—'}</td>
       <td><span class="lead-score ${(l.score||0)>=70?'score-high':(l.score||0)>=40?'score-mid':'score-low'}">${l.score ?? '?'}</span></td>
+      <td>${lastReviewBadge(l)}</td>
       <td>${statusSelectHtml(l)}</td>
       <td style="color:var(--muted); font-size:12px;">${new Date(l.added).toLocaleDateString()}</td>
       <td>${callBtnHtml(l)}</td>
@@ -1150,6 +1193,7 @@ function renderPipeline() {
       </div>
       <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
         <span style="font-size:13px; color:var(--muted);">${l.rating ? `★ ${l.rating}` : '—'}</span>
+        ${lastReviewBadge(l)}
         ${statusSelectHtml(l)}
       </div>
       <div class="pipeline-card-actions">
