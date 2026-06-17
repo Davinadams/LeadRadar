@@ -106,7 +106,7 @@ async function enrichPlace(placeId, base, searchRank) {
       'name', 'formatted_address', 'formatted_phone_number',
       'website', 'rating', 'user_ratings_total',
       'opening_hours', 'types', 'url', 'business_status',
-      'photos'
+      'photos', 'reviews'
     ].join(',');
 
     const detailRes = await axios.get(
@@ -115,6 +115,11 @@ async function enrichPlace(placeId, base, searchRank) {
     );
 
     const d = detailRes.data.result || {};
+    // Google returns up to 5 reviews; "time" is a Unix timestamp in seconds.
+    // We only need the most recent one to know how fresh the review activity is.
+    const reviewTimes = (d.reviews || []).map(r => r.time).filter(Boolean);
+    const lastReviewTime = reviewTimes.length ? Math.max(...reviewTimes) : null;
+
     return {
       place_id: placeId,
       name: d.name || base.name,
@@ -136,6 +141,8 @@ async function enrichPlace(placeId, base, searchRank) {
       search_rank: searchRank || null,
       in_3pack: searchRank <= 3,
       rank_label: searchRank <= 3 ? 'Top 3 on Google Maps' : searchRank <= 10 ? 'Page 1 on Google Maps' : 'Low Google visibility',
+      // Most recent review timestamp (Unix seconds), used by the "Last Review" filter/badge
+      last_review_time: lastReviewTime,
     };
   } catch {
     return {
@@ -154,6 +161,7 @@ async function enrichPlace(placeId, base, searchRank) {
       search_rank: searchRank || null,
       in_3pack: searchRank <= 3,
       rank_label: searchRank <= 3 ? 'Top 3 on Google Maps' : searchRank <= 10 ? 'Page 1 on Google Maps' : 'Low Google visibility',
+      last_review_time: null,
     };
   }
 }
