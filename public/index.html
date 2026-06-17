@@ -196,14 +196,45 @@
   /* Responsive */
   @media (max-width: 900px) {
     .sidebar { display: none; }
-    .main { margin-left: 0; padding: 20px 16px; }
+    .main { margin-left: 0; padding: 20px 16px 84px; }
     .stats { grid-template-columns: repeat(2, 1fr); }
     .outreach-layout { grid-template-columns: 1fr; }
     .detail-grid { grid-template-columns: 1fr; }
+    .mobile-nav { display: flex; }
+    .pipeline-table { display: none; }
+    .pipeline-cards { display: flex !important; }
   }
+  .mobile-nav { display: none; position: fixed; bottom: 0; left: 0; right: 0; z-index: 50; background: var(--bg2); border-top: 1px solid var(--border); padding: 6px 8px calc(6px + env(safe-area-inset-bottom)); justify-content: space-around; }
+  .mobile-nav-item { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 6px 10px; border-radius: var(--radius-sm); color: var(--muted); font-size: 11px; cursor: pointer; position: relative; flex: 1; }
+  .mobile-nav-item.active { color: var(--accent); }
+  .mobile-nav-item svg { width: 19px; height: 19px; }
+  .mobile-nav-badge { position: absolute; top: 2px; right: 18%; font-size: 9px; background: var(--accent); color: #000; border-radius: 20px; padding: 0 5px; min-width: 14px; text-align: center; font-weight: 600; }
+  .pipeline-cards { display: none; flex-direction: column; gap: 10px; }
+  .pipeline-card { background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 14px; }
+  .pipeline-card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 8px; }
+  .pipeline-card-actions { display: flex; gap: 8px; margin-top: 10px; }
+  .pipeline-call-btn { display: inline-flex; align-items: center; gap: 6px; background: var(--accent); color: #000; font-weight: 600; font-size: 12px; padding: 7px 12px; border-radius: var(--radius-sm); text-decoration: none; border: none; cursor: pointer; }
+  .pipeline-call-btn:not([href]), .pipeline-call-btn.disabled { background: var(--bg2); color: var(--muted2); cursor: not-allowed; }
 </style>
 </head>
 <body>
+
+<nav class="mobile-nav">
+  <div class="mobile-nav-item active" onclick="showPage('leads', this)">
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35" stroke-linecap="round"/></svg>
+    Find Leads
+  </div>
+  <div class="mobile-nav-item" onclick="showPage('pipeline', this)">
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4" stroke-linecap="round" stroke-linejoin="round"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" stroke-linecap="round"/></svg>
+    Pipeline
+    <span id="pipeline-count-mobile" class="mobile-nav-badge" style="display:none;"></span>
+  </div>
+  <div class="mobile-nav-item" onclick="showPage('outreach', this)">
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    Outreach
+  </div>
+</nav>
+
 
 <nav class="sidebar">
   <div class="logo">
@@ -446,6 +477,56 @@
       <button class="btn btn-accent btn-sm" onclick="exportPipelineCSV()">↓ Export CSV</button>
     </div>
     <div class="page-sub">Track your saved leads from first contact to closed deal</div>
+    <div class="search-panel" style="margin-bottom:16px;">
+      <div style="display:flex; gap:14px; flex-wrap:wrap; align-items:flex-end;">
+        <div class="field" style="flex:1.4; min-width:160px;">
+          <label>Search</label>
+          <input type="text" id="p-search" placeholder="Business name or address…" oninput="renderPipeline()"
+            style="height:38px; border:1px solid var(--border); border-radius:var(--radius-sm); background:var(--bg3); color:var(--text); padding:0 12px; font-size:14px;">
+        </div>
+        <div class="field" style="flex:1; min-width:130px;">
+          <label>Status</label>
+          <select id="p-status" onchange="renderPipeline()">
+            <option value="all">All statuses</option>
+            <option value="new">New</option>
+            <option value="contacted">Contacted</option>
+            <option value="demo">Demo</option>
+            <option value="closed">Closed ✓</option>
+            <option value="lost">Lost</option>
+          </select>
+        </div>
+        <div class="field" style="flex:1; min-width:130px;">
+          <label>Score</label>
+          <select id="p-score" onchange="renderPipeline()">
+            <option value="all">Any score</option>
+            <option value="high">70+ (high)</option>
+            <option value="mid">40 – 69 (mid)</option>
+            <option value="low">Under 40 (low)</option>
+          </select>
+        </div>
+        <div class="field" style="flex:1; min-width:130px;">
+          <label>Has phone</label>
+          <select id="p-phone" onchange="renderPipeline()">
+            <option value="all">Doesn't matter</option>
+            <option value="yes">Has phone number</option>
+            <option value="no">No phone number</option>
+          </select>
+        </div>
+        <div class="field" style="flex:1; min-width:130px;">
+          <label>Sort by</label>
+          <select id="p-sort" onchange="renderPipeline()">
+            <option value="added_desc">Newest added</option>
+            <option value="added_asc">Oldest added</option>
+            <option value="score_desc">Score: high to low</option>
+            <option value="score_asc">Score: low to high</option>
+            <option value="name">Name (A–Z)</option>
+          </select>
+        </div>
+        <div class="field" style="flex:0;">
+          <button class="btn btn-sm" onclick="resetPipelineFilters()">Reset</button>
+        </div>
+      </div>
+    </div>
     <div id="pipeline-container">
       <div class="empty">
         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4" stroke-linecap="round" stroke-linejoin="round"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
@@ -537,8 +618,11 @@ function showPage(name, el) {
   ['leads','pipeline','outreach'].forEach(p => {
     document.getElementById('page-' + p).style.display = p === name ? 'block' : 'none';
   });
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  el.classList.add('active');
+  document.querySelectorAll('.nav-item, .mobile-nav-item').forEach(n => n.classList.remove('active'));
+  // Activate both the sidebar item and the matching mobile-nav item, regardless of which was clicked
+  const idx = ['leads','pipeline','outreach'].indexOf(name);
+  document.querySelectorAll('.nav-item')[idx]?.classList.add('active');
+  document.querySelectorAll('.mobile-nav-item')[idx]?.classList.add('active');
   if (name === 'pipeline') renderPipeline();
   if (name === 'outreach') populateOutreachSelect();
 }
@@ -931,6 +1015,11 @@ function updatePipelineCount() {
   const el = document.getElementById('pipeline-count');
   el.textContent = pipeline.length || '';
   document.getElementById('s-pipe').textContent = pipeline.length;
+  const mEl = document.getElementById('pipeline-count-mobile');
+  if (mEl) {
+    mEl.textContent = pipeline.length || '';
+    mEl.style.display = pipeline.length ? 'block' : 'none';
+  }
 }
 
 async function updateStatus(placeId, status) {
@@ -948,16 +1037,87 @@ async function removePipeline(placeId) {
   renderPipeline();
 }
 
+function getFilteredPipeline() {
+  const search = (document.getElementById('p-search')?.value || '').trim().toLowerCase();
+  const status = document.getElementById('p-status')?.value || 'all';
+  const scoreFilter = document.getElementById('p-score')?.value || 'all';
+  const phoneFilter = document.getElementById('p-phone')?.value || 'all';
+  const sort = document.getElementById('p-sort')?.value || 'added_desc';
+
+  let list = pipeline.filter(l => {
+    if (search) {
+      const hay = ((l.name || '') + ' ' + (l.address || '')).toLowerCase();
+      if (!hay.includes(search)) return false;
+    }
+    if (status !== 'all' && l.status !== status) return false;
+    const s = l.score || 0;
+    if (scoreFilter === 'high' && s < 70) return false;
+    if (scoreFilter === 'mid' && (s < 40 || s >= 70)) return false;
+    if (scoreFilter === 'low' && s >= 40) return false;
+    if (phoneFilter === 'yes' && !l.phone) return false;
+    if (phoneFilter === 'no' && l.phone) return false;
+    return true;
+  });
+
+  list = list.slice().sort((a, b) => {
+    if (sort === 'added_asc')  return new Date(a.added) - new Date(b.added);
+    if (sort === 'added_desc') return new Date(b.added) - new Date(a.added);
+    if (sort === 'score_desc') return (b.score||0) - (a.score||0);
+    if (sort === 'score_asc')  return (a.score||0) - (b.score||0);
+    if (sort === 'name')       return (a.name||'').localeCompare(b.name||'');
+    return 0;
+  });
+
+  return list;
+}
+
+function resetPipelineFilters() {
+  document.getElementById('p-search').value = '';
+  document.getElementById('p-status').value = 'all';
+  document.getElementById('p-score').value = 'all';
+  document.getElementById('p-phone').value = 'all';
+  document.getElementById('p-sort').value = 'added_desc';
+  renderPipeline();
+}
+
+function callHref(phone) {
+  if (!phone) return null;
+  return 'tel:' + phone.replace(/[^\d+]/g, '');
+}
+
 function renderPipeline() {
   const container = document.getElementById('pipeline-container');
   if (!pipeline.length) {
     container.innerHTML = `<div class="empty"><p>No leads saved yet. Search for leads and click "+ Pipeline"</p></div>`;
     return;
   }
+  const filtered = getFilteredPipeline();
+  if (!filtered.length) {
+    container.innerHTML = `<div class="empty"><p>No saved leads match these filters.</p></div>`;
+    return;
+  }
   const statusColors = { new: 'status-new', contacted: 'status-contacted', demo: 'status-demo', closed: 'status-closed', lost: 'status-lost' };
-  container.innerHTML = `<div class="table-wrap"><table class="pipeline-table">
-    <thead><tr><th>Business</th><th>Rating</th><th>Score</th><th>Status</th><th>Added</th><th></th></tr></thead>
-    <tbody>${pipeline.map(l => `
+
+  const statusSelectHtml = (l) => `
+    <select class="status-sel ${statusColors[l.status]||''}" onchange="updateStatus('${esc(l.place_id)}', this.value)">
+      <option value="new" ${l.status==='new'?'selected':''}>New</option>
+      <option value="contacted" ${l.status==='contacted'?'selected':''}>Contacted</option>
+      <option value="demo" ${l.status==='demo'?'selected':''}>Demo</option>
+      <option value="closed" ${l.status==='closed'?'selected':''}>Closed ✓</option>
+      <option value="lost" ${l.status==='lost'?'selected':''}>Lost</option>
+    </select>`;
+
+  const callBtnHtml = (l) => {
+    const href = callHref(l.phone);
+    return href
+      ? `<a class="pipeline-call-btn" href="${href}">📞 Call</a>`
+      : `<span class="pipeline-call-btn disabled" title="No phone number on file">📞 Call</span>`;
+  };
+
+  // Desktop table view
+  const tableHtml = `<div class="table-wrap"><table class="pipeline-table">
+    <thead><tr><th>Business</th><th>Rating</th><th>Score</th><th>Status</th><th>Added</th><th></th><th></th></tr></thead>
+    <tbody>${filtered.map(l => `
     <tr>
       <td>
         <div style="font-weight:500;">${esc(l.name)}</div>
@@ -966,16 +1126,9 @@ function renderPipeline() {
       </td>
       <td>${l.rating ? `★ ${l.rating}` : '—'}</td>
       <td><span class="lead-score ${(l.score||0)>=70?'score-high':(l.score||0)>=40?'score-mid':'score-low'}">${l.score ?? '?'}</span></td>
-      <td>
-        <select class="status-sel ${statusColors[l.status]||''}" onchange="updateStatus('${esc(l.place_id)}', this.value)">
-          <option value="new" ${l.status==='new'?'selected':''}>New</option>
-          <option value="contacted" ${l.status==='contacted'?'selected':''}>Contacted</option>
-          <option value="demo" ${l.status==='demo'?'selected':''}>Demo</option>
-          <option value="closed" ${l.status==='closed'?'selected':''}>Closed ✓</option>
-          <option value="lost" ${l.status==='lost'?'selected':''}>Lost</option>
-        </select>
-      </td>
+      <td>${statusSelectHtml(l)}</td>
       <td style="color:var(--muted); font-size:12px;">${new Date(l.added).toLocaleDateString()}</td>
+      <td>${callBtnHtml(l)}</td>
       <td>
         <div style="display:flex; gap:6px;">
           <button class="btn btn-sm" onclick="openNotes('${esc(l.place_id)}')">Notes</button>
@@ -984,6 +1137,29 @@ function renderPipeline() {
       </td>
     </tr>`).join('')}
     </tbody></table></div>`;
+
+  // Mobile card view (shown instead of the table under 900px, see CSS)
+  const cardsHtml = `<div class="pipeline-cards">${filtered.map(l => `
+    <div class="pipeline-card">
+      <div class="pipeline-card-top">
+        <div>
+          <div style="font-weight:600;">${esc(l.name)}</div>
+          <div class="notes-mini">${esc((l.address || '').split(',').slice(0,2).join(','))}</div>
+        </div>
+        <span class="lead-score ${(l.score||0)>=70?'score-high':(l.score||0)>=40?'score-mid':'score-low'}">${l.score ?? '?'}</span>
+      </div>
+      <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+        <span style="font-size:13px; color:var(--muted);">${l.rating ? `★ ${l.rating}` : '—'}</span>
+        ${statusSelectHtml(l)}
+      </div>
+      <div class="pipeline-card-actions">
+        ${callBtnHtml(l)}
+        <button class="btn btn-sm" onclick="openNotes('${esc(l.place_id)}')">Notes</button>
+        <button class="btn btn-sm btn-danger" onclick="removePipeline('${esc(l.place_id)}')">✕</button>
+      </div>
+    </div>`).join('')}</div>`;
+
+  container.innerHTML = tableHtml + cardsHtml;
 }
 
 // ─── Notes ─────────────────────────────────────────────────────────────────
