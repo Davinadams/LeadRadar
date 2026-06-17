@@ -60,6 +60,19 @@
   .field input, .field select { height: 38px; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--bg3); color: var(--text); padding: 0 12px; font-size: 14px; outline: none; transition: border-color 0.15s; }
   .field input:focus, .field select:focus { border-color: var(--border2); }
   .field select option { background: var(--bg3); }
+
+  /* Custom multi-select city dropdown (stays open across selections) */
+  .city-field-wrap { position: relative; }
+  .city-dropdown-panel { position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius-sm); max-height: 260px; overflow-y: auto; z-index: 40; display: none; box-shadow: 0 10px 28px rgba(0,0,0,0.45); }
+  .city-dropdown-panel.show { display: block; }
+  .city-dropdown-group { padding: 6px 0; }
+  .city-dropdown-group-label { padding: 6px 12px 4px; font-size: 10px; text-transform: uppercase; letter-spacing: 0.6px; color: var(--muted2); position: sticky; top: 0; background: var(--bg3); }
+  .city-dropdown-option { display: flex; align-items: center; gap: 9px; padding: 7px 12px; font-size: 13px; cursor: pointer; color: var(--text); }
+  .city-dropdown-option:hover { background: rgba(255,255,255,0.05); }
+  .city-dropdown-option input[type="checkbox"] { accent-color: var(--accent); width: 14px; height: 14px; cursor: pointer; flex-shrink: 0; }
+  .city-dropdown-empty { padding: 12px; font-size: 12px; color: var(--muted); }
+  .city-dropdown-add { display: flex; align-items: center; gap: 8px; padding: 9px 12px; font-size: 13px; color: var(--accent); cursor: pointer; border-top: 1px solid var(--border); font-weight: 500; }
+  .city-dropdown-add:hover { background: rgba(0,217,126,0.08); }
   .btn { height: 38px; padding: 0 18px; border-radius: var(--radius-sm); border: 1px solid var(--border); background: transparent; color: var(--text); font-size: 13px; font-weight: 500; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.15s; white-space: nowrap; }
   .btn:hover { border-color: var(--border2); background: var(--bg3); }
   .btn:active { transform: scale(0.97); }
@@ -314,185 +327,16 @@
           <option value="Junk Removal">
         </datalist>
         </div>
-        <div class="field" style="flex:1.5;">
-          <label>Location <span style="color:var(--muted2); font-size:10px; font-weight:400;">select multiple</span></label>
-          <div id="location-tags" style="min-height:38px; border:1px solid var(--border); border-radius:var(--radius-sm); background:var(--bg3); padding:4px 8px; display:flex; flex-wrap:wrap; gap:4px; align-items:center; cursor:text;" onclick="document.getElementById('q-location').focus()">
-            <input type="text" id="q-location" list="location-list" placeholder="Add city..." autocomplete="off"
+        <div class="field city-field-wrap" style="flex:1.5;">
+          <label>Location <span style="color:var(--muted2); font-size:10px; font-weight:400;">select multiple, dropdown stays open</span></label>
+          <div id="location-tags" style="min-height:38px; border:1px solid var(--border); border-radius:var(--radius-sm); background:var(--bg3); padding:4px 8px; display:flex; flex-wrap:wrap; gap:4px; align-items:center; cursor:text;" onclick="openCityDropdown()">
+            <input type="text" id="q-location" placeholder="Add city..." autocomplete="off"
               style="border:none; background:transparent; color:var(--text); font-size:14px; outline:none; flex:1; min-width:120px; height:28px;"
-              onkeydown="handleLocationKey(event)">
+              onkeydown="handleLocationKey(event)" oninput="renderCityDropdown()" onfocus="openCityDropdown()">
           </div>
-        <datalist id="location-list">
-          <!-- Utah -->
-          <option value="Salt Lake City, UT"><option value="West Valley City, UT"><option value="Provo, UT">
-          <option value="West Jordan, UT"><option value="Orem, UT"><option value="Sandy, UT">
-          <option value="Ogden, UT"><option value="St. George, UT"><option value="Layton, UT">
-          <option value="South Jordan, UT"><option value="Taylorsville, UT"><option value="Logan, UT">
-          <option value="Lehi, UT"><option value="Murray, UT"><option value="Millcreek, UT">
-          <option value="Draper, UT"><option value="Bountiful, UT"><option value="Riverton, UT">
-          <option value="Roy, UT"><option value="Spanish Fork, UT"><option value="Pleasant Grove, UT">
-          <option value="Cottonwood Heights, UT"><option value="Springville, UT"><option value="American Fork, UT">
-          <option value="Herriman, UT"><option value="Kaysville, UT"><option value="Cedar City, UT">
-          <option value="Midvale, UT"><option value="Syracuse, UT"><option value="Clearfield, UT">
-          <option value="Tooele, UT"><option value="South Salt Lake, UT"><option value="Holladay, UT">
-          <option value="Eagle Mountain, UT"><option value="Saratoga Springs, UT"><option value="Payson, UT">
-          <option value="North Ogden, UT"><option value="Washington, UT"><option value="Brigham City, UT">
-          <option value="Magna, UT"><option value="Santaquin, UT"><option value="Clinton, UT">
-          <option value="North Salt Lake, UT"><option value="Highland, UT"><option value="Bluffdale, UT">
-          <option value="Price, UT"><option value="Vernal, UT"><option value="Moab, UT">
-          <option value="Heber City, UT"><option value="Park City, UT"><option value="Nephi, UT">
-          <option value="Richfield, UT"><option value="Ephraim, UT"><option value="Manti, UT">
-          <option value="Roosevelt, UT"><option value="Duchesne, UT"><option value="Kanab, UT">
-          <!-- Arizona -->
-          <option value="Phoenix, AZ"><option value="Tucson, AZ"><option value="Mesa, AZ">
-          <option value="Chandler, AZ"><option value="Scottsdale, AZ"><option value="Gilbert, AZ">
-          <option value="Glendale, AZ"><option value="Tempe, AZ"><option value="Peoria, AZ">
-          <option value="Surprise, AZ"><option value="Goodyear, AZ"><option value="Buckeye, AZ">
-          <option value="Yuma, AZ"><option value="Avondale, AZ"><option value="Flagstaff, AZ">
-          <option value="Maricopa, AZ"><option value="Casa Grande, AZ"><option value="Lake Havasu City, AZ">
-          <option value="Sierra Vista, AZ"><option value="Prescott, AZ"><option value="Prescott Valley, AZ">
-          <option value="Apache Junction, AZ"><option value="El Mirage, AZ"><option value="Queen Creek, AZ">
-          <option value="Bullhead City, AZ"><option value="San Tan Valley, AZ"><option value="Kingman, AZ">
-          <option value="Fountain Hills, AZ"><option value="Sahuarita, AZ"><option value="Oro Valley, AZ">
-          <option value="Marana, AZ"><option value="Florence, AZ"><option value="Coolidge, AZ">
-          <option value="Douglas, AZ"><option value="Nogales, AZ"><option value="Sedona, AZ">
-          <option value="Show Low, AZ"><option value="Payson, AZ"><option value="Cottonwood, AZ">
-          <option value="Camp Verde, AZ"><option value="Globe, AZ"><option value="Safford, AZ">
-          <option value="Winslow, AZ"><option value="Holbrook, AZ"><option value="Williams, AZ">
-          <option value="Page, AZ"><option value="Wickenburg, AZ"><option value="Anthem, AZ">
-          <option value="Sun City, AZ"><option value="Sun City West, AZ"><option value="Litchfield Park, AZ">
-          <option value="Tolleson, AZ"><option value="Youngtown, AZ"><option value="Guadalupe, AZ">
-          <!-- Colorado -->
-          <option value="Denver, CO"><option value="Colorado Springs, CO"><option value="Aurora, CO">
-          <option value="Fort Collins, CO"><option value="Lakewood, CO"><option value="Thornton, CO">
-          <option value="Arvada, CO"><option value="Westminster, CO"><option value="Pueblo, CO">
-          <option value="Centennial, CO"><option value="Boulder, CO"><option value="Highlands Ranch, CO">
-          <option value="Greeley, CO"><option value="Longmont, CO"><option value="Loveland, CO">
-          <option value="Broomfield, CO"><option value="Castle Rock, CO"><option value="Commerce City, CO">
-          <option value="Parker, CO"><option value="Northglenn, CO"><option value="Brighton, CO">
-          <option value="Littleton, CO"><option value="Englewood, CO"><option value="Wheat Ridge, CO">
-          <option value="Fountain, CO"><option value="Windsor, CO"><option value="Evans, CO">
-          <option value="Erie, CO"><option value="Lafayette, CO"><option value="Louisville, CO">
-          <option value="Durango, CO"><option value="Steamboat Springs, CO"><option value="Aspen, CO">
-          <option value="Vail, CO"><option value="Telluride, CO"><option value="Breckenridge, CO">
-          <option value="Montrose, CO"><option value="Grand Junction, CO"><option value="Glenwood Springs, CO">
-          <option value="Alamosa, CO"><option value="La Junta, CO"><option value="Trinidad, CO">
-          <option value="Walsenburg, CO"><option value="Canon City, CO"><option value="Florence, CO">
-          <option value="Pueblo West, CO"><option value="Security-Widefield, CO"><option value="Falcon, CO">
-          <option value="Woodland Park, CO"><option value="Salida, CO"><option value="Buena Vista, CO">
-          <option value="Leadville, CO"><option value="Silverthorne, CO"><option value="Frisco, CO">
-          <option value="Dillon, CO"><option value="Avon, CO"><option value="Edwards, CO">
-          <option value="Basalt, CO"><option value="Carbondale, CO"><option value="Rifle, CO">
-          <option value="Fruita, CO"><option value="Delta, CO"><option value="Gunnison, CO">
-          <option value="Crested Butte, CO"><option value="Pagosa Springs, CO"><option value="Cortez, CO">
-          <option value="Fort Morgan, CO"><option value="Sterling, CO"><option value="Yuma, CO">
-          <option value="Akron, CO"><option value="Wray, CO"><option value="Burlington, CO">
-          <!-- California -->
-          <option value="Los Angeles, CA"><option value="San Diego, CA"><option value="San Jose, CA">
-          <option value="San Francisco, CA"><option value="Fresno, CA"><option value="Sacramento, CA">
-          <option value="Long Beach, CA"><option value="Oakland, CA"><option value="Bakersfield, CA">
-          <option value="Anaheim, CA"><option value="Santa Ana, CA"><option value="Riverside, CA">
-          <option value="Stockton, CA"><option value="Irvine, CA"><option value="Chula Vista, CA">
-          <option value="Fremont, CA"><option value="San Bernardino, CA"><option value="Modesto, CA">
-          <option value="Fontana, CA"><option value="Moreno Valley, CA"><option value="Glendale, CA">
-          <option value="Huntington Beach, CA"><option value="Santa Clarita, CA"><option value="Garden Grove, CA">
-          <option value="Oceanside, CA"><option value="Rancho Cucamonga, CA"><option value="Santa Rosa, CA">
-          <option value="Ontario, CA"><option value="Lancaster, CA"><option value="Elk Grove, CA">
-          <option value="Palmdale, CA"><option value="Salinas, CA"><option value="Sunnyvale, CA">
-          <option value="Pomona, CA"><option value="Escondido, CA"><option value="Torrance, CA">
-          <option value="Pasadena, CA"><option value="Hayward, CA"><option value="Fullerton, CA">
-          <option value="Orange, CA"><option value="Roseville, CA"><option value="Visalia, CA">
-          <option value="Concord, CA"><option value="Victorville, CA"><option value="Simi Valley, CA">
-          <option value="Santa Clara, CA"><option value="Vallejo, CA"><option value="Berkeley, CA">
-          <option value="El Monte, CA"><option value="Downey, CA"><option value="Costa Mesa, CA">
-          <option value="Inglewood, CA"><option value="West Covina, CA"><option value="Norwalk, CA">
-          <option value="Burbank, CA"><option value="Antioch, CA"><option value="Richmond, CA">
-          <option value="Temecula, CA"><option value="Murrieta, CA"><option value="Thousand Oaks, CA">
-          <option value="Ventura, CA"><option value="Santa Barbara, CA"><option value="San Buenaventura, CA">
-          <option value="Oxnard, CA"><option value="Chico, CA"><option value="Redding, CA">
-          <option value="Santa Maria, CA"><option value="El Cajon, CA"><option value="Rialto, CA">
-          <option value="Daly City, CA"><option value="San Mateo, CA"><option value="Compton, CA">
-          <option value="Clovis, CA"><option value="Jurupa Valley, CA"><option value="South Gate, CA">
-          <option value="Vista, CA"><option value="Carson, CA"><option value="Santa Monica, CA">
-          <option value="Hesperia, CA"><option value="Westminster, CA"><option value="Redondo Beach, CA">
-          <option value="Hawthorne, CA"><option value="Whittier, CA"><option value="Newport Beach, CA">
-          <option value="Alhambra, CA"><option value="San Leandro, CA"><option value="Menifee, CA">
-          <option value="Lakewood, CA"><option value="Indio, CA"><option value="Palm Springs, CA">
-          <option value="Palm Desert, CA"><option value="Cathedral City, CA"><option value="Coachella, CA">
-          <option value="Napa, CA"><option value="Petaluma, CA"><option value="Fairfield, CA">
-          <option value="Vacaville, CA"><option value="San Ramon, CA"><option value="Pleasanton, CA">
-          <option value="Livermore, CA"><option value="Folsom, CA"><option value="Citrus Heights, CA">
-          <option value="Manteca, CA"><option value="Turlock, CA"><option value="Merced, CA">
-          <option value="Yuba City, CA"><option value="Redlands, CA"><option value="Yucaipa, CA">
-          <option value="Lake Forest, CA"><option value="Mission Viejo, CA"><option value="San Clemente, CA">
-          <!-- Nevada -->
-          <option value="Las Vegas, NV"><option value="Henderson, NV"><option value="Reno, NV">
-          <option value="North Las Vegas, NV"><option value="Sparks, NV"><option value="Carson City, NV">
-          <option value="Fernley, NV"><option value="Elko, NV"><option value="Mesquite, NV">
-          <option value="Boulder City, NV"><option value="Fallon, NV"><option value="Winnemucca, NV">
-          <option value="West Wendover, NV"><option value="Ely, NV"><option value="Yerington, NV">
-          <option value="Laughlin, NV"><option value="Pahrump, NV"><option value="Summerlin, NV">
-          <option value="Enterprise, NV"><option value="Spring Valley, NV"><option value="Sunrise Manor, NV">
-          <option value="Whitney, NV"><option value="Winchester, NV"><option value="Paradise, NV">
-          <option value="Sun Valley, NV"><option value="Gardnerville, NV"><option value="Minden, NV">
-          <option value="Incline Village, NV"><option value="Dayton, NV"><option value="Battle Mountain, NV">
-          <!-- Idaho -->
-          <option value="Boise, ID"><option value="Nampa, ID"><option value="Meridian, ID">
-          <option value="Idaho Falls, ID"><option value="Pocatello, ID"><option value="Caldwell, ID">
-          <option value="Coeur d'Alene, ID"><option value="Twin Falls, ID"><option value="Lewiston, ID">
-          <option value="Moscow, ID"><option value="Rexburg, ID"><option value="Eagle, ID">
-          <option value="Kuna, ID"><option value="Post Falls, ID"><option value="Sandpoint, ID">
-          <option value="Ammon, ID"><option value="Garden City, ID"><option value="Star, ID">
-          <option value="Middleton, ID"><option value="Chubbuck, ID"><option value="Burley, ID">
-          <option value="Hailey, ID"><option value="Mountain Home, ID"><option value="Jerome, ID">
-          <option value="Blackfoot, ID"><option value="Hayden, ID"><option value="Rathdrum, ID">
-          <option value="Rupert, ID"><option value="Payette, ID"><option value="Weiser, ID">
-          <option value="McCall, ID"><option value="Emmett, ID"><option value="Shelley, ID">
-          <option value="American Falls, ID"><option value="Gooding, ID"><option value="Grangeville, ID">
-          <option value="St. Anthony, ID"><option value="Preston, ID"><option value="Soda Springs, ID">
-          <option value="Driggs, ID"><option value="Victor, ID"><option value="Salmon, ID">
-          <!-- Washington -->
-          <option value="Seattle, WA"><option value="Spokane, WA"><option value="Tacoma, WA">
-          <option value="Vancouver, WA"><option value="Bellevue, WA"><option value="Kent, WA">
-          <option value="Everett, WA"><option value="Spokane Valley, WA"><option value="Renton, WA">
-          <option value="Federal Way, WA"><option value="Yakima, WA"><option value="Kirkland, WA">
-          <option value="Bellingham, WA"><option value="Kennewick, WA"><option value="Auburn, WA">
-          <option value="Pasco, WA"><option value="Marysville, WA"><option value="Redmond, WA">
-          <option value="Lakewood, WA"><option value="Shoreline, WA"><option value="Richland, WA">
-          <option value="Sammamish, WA"><option value="Olympia, WA"><option value="Lacey, WA">
-          <option value="Edmonds, WA"><option value="Bremerton, WA"><option value="Puyallup, WA">
-          <option value="Bothell, WA"><option value="Lynnwood, WA"><option value="Longview, WA">
-          <option value="Issaquah, WA"><option value="Wenatchee, WA"><option value="Mount Vernon, WA">
-          <option value="Pullman, WA"><option value="Walla Walla, WA"><option value="Port Orchard, WA">
-          <!-- Oregon -->
-          <option value="Portland, OR"><option value="Salem, OR"><option value="Eugene, OR">
-          <option value="Gresham, OR"><option value="Hillsboro, OR"><option value="Beaverton, OR">
-          <option value="Bend, OR"><option value="Medford, OR"><option value="Springfield, OR">
-          <option value="Corvallis, OR"><option value="Albany, OR"><option value="Tigard, OR">
-          <option value="Lake Oswego, OR"><option value="Keizer, OR"><option value="Grants Pass, OR">
-          <option value="Oregon City, OR"><option value="McMinnville, OR"><option value="Redmond, OR">
-          <option value="Tualatin, OR"><option value="West Linn, OR"><option value="Woodburn, OR">
-          <option value="Forest Grove, OR"><option value="Newberg, OR"><option value="Roseburg, OR">
-          <option value="Klamath Falls, OR"><option value="Ashland, OR"><option value="Hood River, OR">
-          <option value="Pendleton, OR"><option value="The Dalles, OR"><option value="Coos Bay, OR">
-          <!-- Montana -->
-          <option value="Billings, MT"><option value="Missoula, MT"><option value="Great Falls, MT">
-          <option value="Bozeman, MT"><option value="Butte, MT"><option value="Helena, MT">
-          <option value="Kalispell, MT"><option value="Havre, MT"><option value="Anaconda, MT">
-          <option value="Miles City, MT"><option value="Belgrade, MT"><option value="Livingston, MT">
-          <option value="Whitefish, MT"><option value="Laurel, MT"><option value="Sidney, MT">
-          <!-- Wyoming -->
-          <option value="Cheyenne, WY"><option value="Casper, WY"><option value="Laramie, WY">
-          <option value="Gillette, WY"><option value="Rock Springs, WY"><option value="Sheridan, WY">
-          <option value="Green River, WY"><option value="Evanston, WY"><option value="Riverton, WY">
-          <option value="Jackson, WY"><option value="Cody, WY"><option value="Rawlins, WY">
-          <!-- New Mexico -->
-          <option value="Albuquerque, NM"><option value="Las Cruces, NM"><option value="Rio Rancho, NM">
-          <option value="Santa Fe, NM"><option value="Roswell, NM"><option value="Farmington, NM">
-          <option value="Hobbs, NM"><option value="Clovis, NM"><option value="Carlsbad, NM">
-          <option value="Gallup, NM"><option value="Alamogordo, NM"><option value="Los Lunas, NM">
-          <option value="Sunland Park, NM"><option value="Las Vegas, NM"><option value="Deming, NM">
-          <option value="Los Alamos, NM"><option value="Silver City, NM"><option value="Espanola, NM">
-        </datalist>
+          <div class="city-dropdown-panel" id="city-dropdown-panel"></div>
+        </div>
+          </div>
         </div>
         <div class="field" style="flex:1; min-width:130px;">
           <label>Website</label>
@@ -1537,6 +1381,88 @@ function renderIndustryTags() {
 
 // ─── Multi-location selection ─────────────────────────────────────────────────
 let selectedLocations = [];
+let cityDropdownOpen = false;
+
+const CITY_GROUPS = {
+  "Utah": ["Salt Lake City, UT", "West Valley City, UT", "Provo, UT", "West Jordan, UT", "Orem, UT", "Sandy, UT", "Ogden, UT", "St. George, UT", "Layton, UT", "South Jordan, UT", "Taylorsville, UT", "Logan, UT", "Lehi, UT", "Murray, UT", "Millcreek, UT", "Draper, UT", "Bountiful, UT", "Riverton, UT", "Roy, UT", "Spanish Fork, UT", "Pleasant Grove, UT", "Cottonwood Heights, UT", "Springville, UT", "American Fork, UT", "Herriman, UT", "Kaysville, UT", "Cedar City, UT", "Midvale, UT", "Syracuse, UT", "Clearfield, UT", "Tooele, UT", "South Salt Lake, UT", "Holladay, UT", "Eagle Mountain, UT", "Saratoga Springs, UT", "Payson, UT", "North Ogden, UT", "Washington, UT", "Brigham City, UT", "Magna, UT", "Santaquin, UT", "Clinton, UT", "North Salt Lake, UT", "Highland, UT", "Bluffdale, UT", "Price, UT", "Vernal, UT", "Moab, UT", "Heber City, UT", "Park City, UT", "Nephi, UT", "Richfield, UT", "Ephraim, UT", "Manti, UT", "Roosevelt, UT", "Duchesne, UT", "Kanab, UT"],
+  "Arizona": ["Phoenix, AZ", "Tucson, AZ", "Mesa, AZ", "Chandler, AZ", "Scottsdale, AZ", "Gilbert, AZ", "Glendale, AZ", "Tempe, AZ", "Peoria, AZ", "Surprise, AZ", "Goodyear, AZ", "Buckeye, AZ", "Yuma, AZ", "Avondale, AZ", "Flagstaff, AZ", "Maricopa, AZ", "Casa Grande, AZ", "Lake Havasu City, AZ", "Sierra Vista, AZ", "Prescott, AZ", "Prescott Valley, AZ", "Apache Junction, AZ", "El Mirage, AZ", "Queen Creek, AZ", "Bullhead City, AZ", "San Tan Valley, AZ", "Kingman, AZ", "Fountain Hills, AZ", "Sahuarita, AZ", "Oro Valley, AZ", "Marana, AZ", "Florence, AZ", "Coolidge, AZ", "Douglas, AZ", "Nogales, AZ", "Sedona, AZ", "Show Low, AZ", "Payson, AZ", "Cottonwood, AZ", "Camp Verde, AZ", "Globe, AZ", "Safford, AZ", "Winslow, AZ", "Holbrook, AZ", "Williams, AZ", "Page, AZ", "Wickenburg, AZ", "Anthem, AZ", "Sun City, AZ", "Sun City West, AZ", "Litchfield Park, AZ", "Tolleson, AZ", "Youngtown, AZ", "Guadalupe, AZ"],
+  "Colorado": ["Denver, CO", "Colorado Springs, CO", "Aurora, CO", "Fort Collins, CO", "Lakewood, CO", "Thornton, CO", "Arvada, CO", "Westminster, CO", "Pueblo, CO", "Centennial, CO", "Boulder, CO", "Highlands Ranch, CO", "Greeley, CO", "Longmont, CO", "Loveland, CO", "Broomfield, CO", "Castle Rock, CO", "Commerce City, CO", "Parker, CO", "Northglenn, CO", "Brighton, CO", "Littleton, CO", "Englewood, CO", "Wheat Ridge, CO", "Fountain, CO", "Windsor, CO", "Evans, CO", "Erie, CO", "Lafayette, CO", "Louisville, CO", "Durango, CO", "Steamboat Springs, CO", "Aspen, CO", "Vail, CO", "Telluride, CO", "Breckenridge, CO", "Montrose, CO", "Grand Junction, CO", "Glenwood Springs, CO", "Alamosa, CO", "La Junta, CO", "Trinidad, CO", "Walsenburg, CO", "Canon City, CO", "Florence, CO", "Pueblo West, CO", "Security-Widefield, CO", "Falcon, CO", "Woodland Park, CO", "Salida, CO", "Buena Vista, CO", "Leadville, CO", "Silverthorne, CO", "Frisco, CO", "Dillon, CO", "Avon, CO", "Edwards, CO", "Basalt, CO", "Carbondale, CO", "Rifle, CO", "Fruita, CO", "Delta, CO", "Gunnison, CO", "Crested Butte, CO", "Pagosa Springs, CO", "Cortez, CO", "Fort Morgan, CO", "Sterling, CO", "Yuma, CO", "Akron, CO", "Wray, CO", "Burlington, CO"],
+  "California": ["Los Angeles, CA", "San Diego, CA", "San Jose, CA", "San Francisco, CA", "Fresno, CA", "Sacramento, CA", "Long Beach, CA", "Oakland, CA", "Bakersfield, CA", "Anaheim, CA", "Santa Ana, CA", "Riverside, CA", "Stockton, CA", "Irvine, CA", "Chula Vista, CA", "Fremont, CA", "San Bernardino, CA", "Modesto, CA", "Fontana, CA", "Moreno Valley, CA", "Glendale, CA", "Huntington Beach, CA", "Santa Clarita, CA", "Garden Grove, CA", "Oceanside, CA", "Rancho Cucamonga, CA", "Santa Rosa, CA", "Ontario, CA", "Lancaster, CA", "Elk Grove, CA", "Palmdale, CA", "Salinas, CA", "Sunnyvale, CA", "Pomona, CA", "Escondido, CA", "Torrance, CA", "Pasadena, CA", "Hayward, CA", "Fullerton, CA", "Orange, CA", "Roseville, CA", "Visalia, CA", "Concord, CA", "Victorville, CA", "Simi Valley, CA", "Santa Clara, CA", "Vallejo, CA", "Berkeley, CA", "El Monte, CA", "Downey, CA", "Costa Mesa, CA", "Inglewood, CA", "West Covina, CA", "Norwalk, CA", "Burbank, CA", "Antioch, CA", "Richmond, CA", "Temecula, CA", "Murrieta, CA", "Thousand Oaks, CA", "Ventura, CA", "Santa Barbara, CA", "San Buenaventura, CA", "Oxnard, CA", "Chico, CA", "Redding, CA", "Santa Maria, CA", "El Cajon, CA", "Rialto, CA", "Daly City, CA", "San Mateo, CA", "Compton, CA", "Clovis, CA", "Jurupa Valley, CA", "South Gate, CA", "Vista, CA", "Carson, CA", "Santa Monica, CA", "Hesperia, CA", "Westminster, CA", "Redondo Beach, CA", "Hawthorne, CA", "Whittier, CA", "Newport Beach, CA", "Alhambra, CA", "San Leandro, CA", "Menifee, CA", "Lakewood, CA", "Indio, CA", "Palm Springs, CA", "Palm Desert, CA", "Cathedral City, CA", "Coachella, CA", "Napa, CA", "Petaluma, CA", "Fairfield, CA", "Vacaville, CA", "San Ramon, CA", "Pleasanton, CA", "Livermore, CA", "Folsom, CA", "Citrus Heights, CA", "Manteca, CA", "Turlock, CA", "Merced, CA", "Yuba City, CA", "Redlands, CA", "Yucaipa, CA", "Lake Forest, CA", "Mission Viejo, CA", "San Clemente, CA"],
+  "Nevada": ["Las Vegas, NV", "Henderson, NV", "Reno, NV", "North Las Vegas, NV", "Sparks, NV", "Carson City, NV", "Fernley, NV", "Elko, NV", "Mesquite, NV", "Boulder City, NV", "Fallon, NV", "Winnemucca, NV", "West Wendover, NV", "Ely, NV", "Yerington, NV", "Laughlin, NV", "Pahrump, NV", "Summerlin, NV", "Enterprise, NV", "Spring Valley, NV", "Sunrise Manor, NV", "Whitney, NV", "Winchester, NV", "Paradise, NV", "Sun Valley, NV", "Gardnerville, NV", "Minden, NV", "Incline Village, NV", "Dayton, NV", "Battle Mountain, NV"],
+  "Idaho": ["Boise, ID", "Nampa, ID", "Meridian, ID", "Idaho Falls, ID", "Pocatello, ID", "Caldwell, ID", "Coeur d'Alene, ID", "Twin Falls, ID", "Lewiston, ID", "Moscow, ID", "Rexburg, ID", "Eagle, ID", "Kuna, ID", "Post Falls, ID", "Sandpoint, ID", "Ammon, ID", "Garden City, ID", "Star, ID", "Middleton, ID", "Chubbuck, ID", "Burley, ID", "Hailey, ID", "Mountain Home, ID", "Jerome, ID", "Blackfoot, ID", "Hayden, ID", "Rathdrum, ID", "Rupert, ID", "Payette, ID", "Weiser, ID", "McCall, ID", "Emmett, ID", "Shelley, ID", "American Falls, ID", "Gooding, ID", "Grangeville, ID", "St. Anthony, ID", "Preston, ID", "Soda Springs, ID", "Driggs, ID", "Victor, ID", "Salmon, ID"],
+  "Washington": ["Seattle, WA", "Spokane, WA", "Tacoma, WA", "Vancouver, WA", "Bellevue, WA", "Kent, WA", "Everett, WA", "Spokane Valley, WA", "Renton, WA", "Federal Way, WA", "Yakima, WA", "Kirkland, WA", "Bellingham, WA", "Kennewick, WA", "Auburn, WA", "Pasco, WA", "Marysville, WA", "Redmond, WA", "Lakewood, WA", "Shoreline, WA", "Richland, WA", "Sammamish, WA", "Olympia, WA", "Lacey, WA", "Edmonds, WA", "Bremerton, WA", "Puyallup, WA", "Bothell, WA", "Lynnwood, WA", "Longview, WA", "Issaquah, WA", "Wenatchee, WA", "Mount Vernon, WA", "Pullman, WA", "Walla Walla, WA", "Port Orchard, WA"],
+  "Oregon": ["Portland, OR", "Salem, OR", "Eugene, OR", "Gresham, OR", "Hillsboro, OR", "Beaverton, OR", "Bend, OR", "Medford, OR", "Springfield, OR", "Corvallis, OR", "Albany, OR", "Tigard, OR", "Lake Oswego, OR", "Keizer, OR", "Grants Pass, OR", "Oregon City, OR", "McMinnville, OR", "Redmond, OR", "Tualatin, OR", "West Linn, OR", "Woodburn, OR", "Forest Grove, OR", "Newberg, OR", "Roseburg, OR", "Klamath Falls, OR", "Ashland, OR", "Hood River, OR", "Pendleton, OR", "The Dalles, OR", "Coos Bay, OR"],
+  "Montana": ["Billings, MT", "Missoula, MT", "Great Falls, MT", "Bozeman, MT", "Butte, MT", "Helena, MT", "Kalispell, MT", "Havre, MT", "Anaconda, MT", "Miles City, MT", "Belgrade, MT", "Livingston, MT", "Whitefish, MT", "Laurel, MT", "Sidney, MT"],
+  "Wyoming": ["Cheyenne, WY", "Casper, WY", "Laramie, WY", "Gillette, WY", "Rock Springs, WY", "Sheridan, WY", "Green River, WY", "Evanston, WY", "Riverton, WY", "Jackson, WY", "Cody, WY", "Rawlins, WY"],
+  "New Mexico": ["Albuquerque, NM", "Las Cruces, NM", "Rio Rancho, NM", "Santa Fe, NM", "Roswell, NM", "Farmington, NM", "Hobbs, NM", "Clovis, NM", "Carlsbad, NM", "Gallup, NM", "Alamogordo, NM", "Los Lunas, NM", "Sunland Park, NM", "Las Vegas, NM", "Deming, NM", "Los Alamos, NM", "Silver City, NM", "Espanola, NM"],
+};
+
+function openCityDropdown() {
+  cityDropdownOpen = true;
+  renderCityDropdown();
+}
+
+function closeCityDropdown() {
+  cityDropdownOpen = false;
+  const panel = document.getElementById('city-dropdown-panel');
+  if (panel) panel.classList.remove('show');
+}
+
+function renderCityDropdown() {
+  const panel = document.getElementById('city-dropdown-panel');
+  if (!panel) return;
+  if (!cityDropdownOpen) { panel.classList.remove('show'); return; }
+
+  const q = document.getElementById('q-location').value.trim().toLowerCase();
+  let html = '';
+  let totalMatches = 0;
+
+  Object.keys(CITY_GROUPS).forEach(state => {
+    const matches = CITY_GROUPS[state].filter(c => c.toLowerCase().includes(q));
+    if (!matches.length) return;
+    totalMatches += matches.length;
+    html += '<div class="city-dropdown-group"><div class="city-dropdown-group-label">' + esc(state) + '</div>';
+    matches.forEach(city => {
+      const checked = selectedLocations.includes(city);
+      const safeCity = esc(city).replace(/'/g, "\\'");
+      html += '<label class="city-dropdown-option" onclick="event.stopPropagation();">' +
+        '<input type="checkbox" ' + (checked ? 'checked' : '') + ' onchange="toggleCityCheckbox(\'' + safeCity + '\', this.checked)">' +
+        esc(city) + '</label>';
+    });
+    html += '</div>';
+  });
+
+  if (!totalMatches) {
+    html += '<div class="city-dropdown-empty">No matching cities in the list</div>';
+  }
+
+  if (q && !Object.values(CITY_GROUPS).some(list => list.some(c => c.toLowerCase() === q))) {
+    const safeQ = esc(document.getElementById('q-location').value.trim()).replace(/'/g, "\\'");
+    html += '<div class="city-dropdown-add" onclick="event.stopPropagation(); addLocationTag(document.getElementById(\'q-location\').value.trim()); document.getElementById(\'q-location\').value=\'\'; openCityDropdown();">+ Add "' + esc(document.getElementById('q-location').value.trim()) + '"</div>';
+  }
+
+  panel.innerHTML = html;
+  panel.classList.add('show');
+}
+
+function toggleCityCheckbox(city, isChecked) {
+  if (isChecked) addLocationTag(city);
+  else {
+    const idx = selectedLocations.indexOf(city);
+    if (idx > -1) removeLocationTag(idx);
+  }
+  // Keep dropdown open and refocus so multiple picks can happen in a row
+  openCityDropdown();
+  document.getElementById('q-location').focus();
+}
+
+document.addEventListener('click', (e) => {
+  const wrap = document.getElementById('location-tags');
+  const panel = document.getElementById('city-dropdown-panel');
+  if (wrap && panel && !wrap.contains(e.target) && !panel.contains(e.target)) {
+    closeCityDropdown();
+  }
+});
 
 function handleLocationKey(e) {
   const input = document.getElementById('q-location');
@@ -1545,8 +1471,11 @@ function handleLocationKey(e) {
     e.preventDefault();
     addLocationTag(val);
     input.value = '';
+    renderCityDropdown();
   } else if (e.key === 'Backspace' && !val && selectedLocations.length) {
     removeLocationTag(selectedLocations.length - 1);
+  } else if (e.key === 'Escape') {
+    closeCityDropdown();
   }
 }
 
@@ -1554,11 +1483,13 @@ function addLocationTag(val) {
   if (!val || selectedLocations.includes(val)) return;
   selectedLocations.push(val);
   renderLocationTags();
+  renderCityDropdown();
 }
 
 function removeLocationTag(i) {
   selectedLocations.splice(i, 1);
   renderLocationTags();
+  renderCityDropdown();
 }
 
 function renderLocationTags() {
