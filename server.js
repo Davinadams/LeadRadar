@@ -4,6 +4,7 @@ const axios = require('axios');
 const cors = require('cors');
 const NodeCache = require('node-cache');
 const path = require('path');
+const fs = require('fs');
 
 const app = express();
 const cache = new NodeCache({ stdTTL: 3600 }); // 1hr cache per query
@@ -397,55 +398,104 @@ app.get('/api/photo', async (req, res) => {
   }
 });
 
-// ─── Pipeline persistence (server-side JSON store, file-based) ────────────────
-const fs = require('fs');
+// ─── Pipeline persistence (JSONBin-backed, so it syncs across every device) ──
+const JSONBIN_API_KEY = process.env.JSONBIN_API_KEY;
+const JSONBIN_BIN_ID = process.env.JSONBIN_BIN_ID;
+const JSONBIN_BASE = 'https://api.jsonbin.io/v3/b/' + JSONBIN_BIN_ID;
+
+// Local file is now only a fallback for local dev / if JSONBin env vars aren't set.
 const PIPELINE_FILE = path.join(__dirname, 'pipeline.json');
 
-function loadPipeline() {
+function loadPipelineLocalFallback() {
   try { return JSON.parse(fs.readFileSync(PIPELINE_FILE, 'utf8')); }
   catch { return []; }
 }
-function savePipelineFile(data) {
-  fs.writeFileSync(PIPELINE_FILE, JSON.stringify(data, null, 2));
+function savePipelineLocalFallback(data) {
+  try { fs.writeFileSync(PIPELINE_FILE, JSON.stringify(data, null, 2)); } catch {}
 }
 
-app.get('/api/pipeline', (req, res) => res.json(loadPipeline()));
+async function loadPipeline() {
+  if (!JSONBIN_API_KEY || !JSONBIN_BIN_ID) return loadPipelineLocalFallback();
+  try {
+    const r = await axios.get(JSONBIN_BASE + '/latest', {
+      headers: { 'X-Master-Key': JSONBIN_API_KEY }
+    });
+    // JSONBin wraps the actual data in a "record" field
+    const data = r.data.record;
+    return Array.isArray(data) ? data : [];
+  } catch (err) {
+    console.error('JSONBin load failed, falling back to local file:', err.message);
+    return loadPipelineLocalFallback();
+  }
+}
 
-app.post('/api/pipeline', (req, res) => {
-  const pipeline = loadPipeline();
+async function savePipeline(data) {
+  // Always keep a local backup copy too, in case JSONBin is briefly unreachable
+  savePipelineLocalFallback(data);
+  if (!JSONBIN_API_KEY || !JSONBIN_BIN_ID) return;
+  try {
+    await axios.put(JSONBIN_BASE, data, {
+      headers: { 'X-Master-Key': JSONBIN_API_KEY, 'Content-Type': 'application/json' }
+    });
+  } catch (err) {
+    console.error('JSONBin save failed (local backup file still updated):', err.message);
+  }
+}
+
+app.get('/api/pipeline', async (req, res) => {
+  const pipeline = await loadPipeline();
+  res.json(pipeline);
+});
+
+app.post('/api/pipeline', async (req, res) => {
+  const pipeline = await loadPipeline();
   const lead = req.body;
   if (!lead || !lead.place_id) return res.status(400).json({ error: 'Invalid lead' });
   if (!pipeline.find(l => l.place_id === lead.place_id)) {
     pipeline.push({ ...lead, status: 'new', added: new Date().toISOString() });
-    savePipelineFile(pipeline);
+    await savePipeline(pipeline);
   }
   res.json({ ok: true, total: pipeline.length });
 });
 
-app.patch('/api/pipeline/:id', (req, res) => {
-  const pipeline = loadPipeline();
+app.post('/api/pipeline/bulk', async (req, res) => {
+  const pipeline = await loadPipeline();
+  const incoming = Array.isArray(req.body.leads) ? req.body.leads : [];
+  let added = 0;
+  incoming.forEach(lead => {
+    if (lead && lead.place_id && !pipeline.find(l => l.place_id === lead.place_id)) {
+      pipeline.push({ ...lead, status: 'new', added: new Date().toISOString() });
+      added++;
+    }
+  });
+  if (added) await savePipeline(pipeline);
+  res.json({ ok: true, added, total: pipeline.length });
+});
+
+app.patch('/api/pipeline/:id', async (req, res) => {
+  const pipeline = await loadPipeline();
   const idx = pipeline.findIndex(l => l.place_id === req.params.id);
   if (idx === -1) return res.status(404).json({ error: 'Not found' });
   pipeline[idx] = { ...pipeline[idx], ...req.body };
-  savePipelineFile(pipeline);
+  await savePipeline(pipeline);
   res.json({ ok: true });
 });
 
-app.delete('/api/pipeline/:id', (req, res) => {
-  let pipeline = loadPipeline();
+app.delete('/api/pipeline/:id', async (req, res) => {
+  let pipeline = await loadPipeline();
   pipeline = pipeline.filter(l => l.place_id !== req.params.id);
-  savePipelineFile(pipeline);
+  await savePipeline(pipeline);
   res.json({ ok: true, total: pipeline.length });
 });
 
 // ─── Notes per lead ───────────────────────────────────────────────────────────
-app.post('/api/pipeline/:id/notes', (req, res) => {
-  const pipeline = loadPipeline();
+app.post('/api/pipeline/:id/notes', async (req, res) => {
+  const pipeline = await loadPipeline();
   const idx = pipeline.findIndex(l => l.place_id === req.params.id);
   if (idx === -1) return res.status(404).json({ error: 'Not found' });
   const note = { text: req.body.text, ts: new Date().toISOString() };
   pipeline[idx].notes = [...(pipeline[idx].notes || []), note];
-  savePipelineFile(pipeline);
+  await savePipeline(pipeline);
   res.json({ ok: true });
 });
 
