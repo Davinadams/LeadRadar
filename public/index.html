@@ -196,19 +196,28 @@
   /* Responsive */
   @media (max-width: 900px) {
     .sidebar { display: none; }
-    .main { margin-left: 0; padding: 20px 16px 84px; }
+    .main { margin-left: 0; padding: 76px 16px 32px; }
     .stats { grid-template-columns: repeat(2, 1fr); }
     .outreach-layout { grid-template-columns: 1fr; }
     .detail-grid { grid-template-columns: 1fr; }
-    .mobile-nav { display: flex; }
+    .mobile-header { display: flex; }
     .pipeline-table { display: none; }
     .pipeline-cards { display: flex !important; }
   }
-  .mobile-nav { display: none; position: fixed; bottom: 0; left: 0; right: 0; z-index: 50; background: var(--bg2); border-top: 1px solid var(--border); padding: 6px 8px calc(6px + env(safe-area-inset-bottom)); justify-content: space-around; }
-  .mobile-nav-item { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 6px 10px; border-radius: var(--radius-sm); color: var(--muted); font-size: 11px; cursor: pointer; position: relative; flex: 1; }
-  .mobile-nav-item.active { color: var(--accent); }
-  .mobile-nav-item svg { width: 19px; height: 19px; }
-  .mobile-nav-badge { position: absolute; top: 2px; right: 18%; font-size: 9px; background: var(--accent); color: #000; border-radius: 20px; padding: 0 5px; min-width: 14px; text-align: center; font-weight: 600; }
+  .mobile-header { display: none; position: fixed; top: 0; left: 0; right: 0; z-index: 60; height: 56px; background: var(--bg2); border-bottom: 1px solid var(--border); align-items: center; justify-content: space-between; padding: 0 14px; }
+  .mobile-header .logo { font-size: 15px; }
+  .hamburger-btn { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius-sm); cursor: pointer; position: relative; flex-shrink: 0; }
+  .hamburger-btn svg { width: 20px; height: 20px; color: var(--text); }
+  .hamburger-badge { position: absolute; top: -5px; right: -5px; font-size: 10px; background: var(--accent); color: #000; border-radius: 20px; padding: 0 5px; min-width: 16px; height: 16px; line-height: 16px; text-align: center; font-weight: 700; }
+  .mobile-menu-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 70; }
+  .mobile-menu-overlay.show { display: block; }
+  .mobile-menu-panel { position: fixed; top: 0; right: 0; bottom: 0; width: 78vw; max-width: 300px; background: var(--bg2); border-left: 1px solid var(--border); z-index: 80; transform: translateX(100%); transition: transform 0.2s ease; padding: 20px 16px; display: flex; flex-direction: column; gap: 4px; }
+  .mobile-menu-panel.show { transform: translateX(0); }
+  .mobile-menu-close { align-self: flex-end; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; background: var(--bg3); border-radius: 50%; cursor: pointer; margin-bottom: 10px; color: var(--text); }
+  .mobile-menu-item { display: flex; align-items: center; gap: 12px; padding: 13px 12px; border-radius: var(--radius-sm); color: var(--text); font-size: 15px; cursor: pointer; }
+  .mobile-menu-item.active { background: var(--bg3); color: var(--accent); }
+  .mobile-menu-item svg { width: 18px; height: 18px; flex-shrink: 0; }
+  .mobile-menu-count { margin-left: auto; font-size: 12px; background: var(--bg3); padding: 2px 8px; border-radius: 20px; color: var(--muted); }
   .pipeline-cards { display: none; flex-direction: column; gap: 10px; }
   .pipeline-card { background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 14px; }
   .pipeline-card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 8px; }
@@ -219,17 +228,27 @@
 </head>
 <body>
 
-<nav class="mobile-nav">
-  <div class="mobile-nav-item active" onclick="showPage('leads', this)">
+<div class="mobile-header">
+  <div class="logo"><span class="logo-dot"></span>LeadRadar</div>
+  <div class="hamburger-btn" onclick="openMobileMenu()" aria-label="Open menu">
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18" stroke-linecap="round"/></svg>
+    <span id="pipeline-count-hamburger" class="hamburger-badge" style="display:none;"></span>
+  </div>
+</div>
+
+<div class="mobile-menu-overlay" id="mobile-menu-overlay" onclick="closeMobileMenu()"></div>
+<nav class="mobile-menu-panel" id="mobile-menu-panel">
+  <div class="mobile-menu-close" onclick="closeMobileMenu()">✕</div>
+  <div class="mobile-menu-item active" onclick="showPage('leads', this); closeMobileMenu();">
     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35" stroke-linecap="round"/></svg>
     Find Leads
   </div>
-  <div class="mobile-nav-item" onclick="showPage('pipeline', this)">
+  <div class="mobile-menu-item" onclick="showPage('pipeline', this); closeMobileMenu();">
     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4" stroke-linecap="round" stroke-linejoin="round"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" stroke-linecap="round"/></svg>
     Pipeline
-    <span id="pipeline-count-mobile" class="mobile-nav-badge" style="display:none;"></span>
+    <span id="pipeline-count-mobile" class="mobile-menu-count" style="display:none;"></span>
   </div>
-  <div class="mobile-nav-item" onclick="showPage('outreach', this)">
+  <div class="mobile-menu-item" onclick="showPage('outreach', this); closeMobileMenu();">
     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" stroke-linecap="round" stroke-linejoin="round"/></svg>
     Outreach
   </div>
@@ -632,13 +651,23 @@ function showPage(name, el) {
   ['leads','pipeline','outreach'].forEach(p => {
     document.getElementById('page-' + p).style.display = p === name ? 'block' : 'none';
   });
-  document.querySelectorAll('.nav-item, .mobile-nav-item').forEach(n => n.classList.remove('active'));
-  // Activate both the sidebar item and the matching mobile-nav item, regardless of which was clicked
+  document.querySelectorAll('.nav-item, .mobile-menu-item').forEach(n => n.classList.remove('active'));
+  // Activate both the sidebar item and the matching mobile-menu item, regardless of which was clicked
   const idx = ['leads','pipeline','outreach'].indexOf(name);
   document.querySelectorAll('.nav-item')[idx]?.classList.add('active');
-  document.querySelectorAll('.mobile-nav-item')[idx]?.classList.add('active');
+  document.querySelectorAll('.mobile-menu-item')[idx]?.classList.add('active');
   if (name === 'pipeline') renderPipeline();
   if (name === 'outreach') populateOutreachSelect();
+}
+
+function openMobileMenu() {
+  document.getElementById('mobile-menu-overlay').classList.add('show');
+  document.getElementById('mobile-menu-panel').classList.add('show');
+}
+
+function closeMobileMenu() {
+  document.getElementById('mobile-menu-overlay').classList.remove('show');
+  document.getElementById('mobile-menu-panel').classList.remove('show');
 }
 
 // ─── Lead search ───────────────────────────────────────────────────────────
@@ -1033,6 +1062,11 @@ function updatePipelineCount() {
   if (mEl) {
     mEl.textContent = pipeline.length || '';
     mEl.style.display = pipeline.length ? 'block' : 'none';
+  }
+  const hEl = document.getElementById('pipeline-count-hamburger');
+  if (hEl) {
+    hEl.textContent = pipeline.length || '';
+    hEl.style.display = pipeline.length ? 'block' : 'none';
   }
 }
 
